@@ -4,8 +4,9 @@ import { clerkClient, currentUser, EmailAddress } from "@clerk/nextjs/server";
 import { db } from "./db";
 import { Sidebar } from "lucide-react";
 import { redirect } from "next/navigation";
-import { SubAccount, User } from "@prisma/client";
+import { Agency, Plan, SubAccount, User } from "@prisma/client";
 import { connect } from "http2";
+import AgencyDetails from "@/components/forms/AgencyDetails";
 
 export const getAuthUserDetails = async () => {
   const user = await currentUser();
@@ -179,3 +180,122 @@ export const verifyAndAcceptInvitation = async () => {
     return agency ? agency.id : null;
   }
 };
+
+export const updateAgencyDetails = async (
+  agencyId: string,
+  agenctDetails: Partial<Agency>
+) => {
+  const response = await db.agency.update({
+    where: {
+      id: agencyId,
+    },
+    data: { ...agenctDetails },
+  });
+
+  return response;
+};
+
+export const deleteAgency = async (agencyId: string) => {
+  const response = await db.agency.delete({
+    where: {
+      id: agencyId,
+    },
+  });
+
+  return response;
+};
+
+export const initUser = async (newUser: Partial<User>) => {
+  const user = await currentUser();
+  if (!user) return;
+
+  const userData = await db.user.upsert({
+    where: {
+      email: user.emailAddresses[0].emailAddress,
+    },
+    update: newUser,
+    create: {
+      id: user.id,
+      avatarUrl: user.imageUrl,
+      email: user.emailAddresses[0].emailAddress,
+      name: `${user.firstName} ${user.lastName}`,
+      role: newUser.role || "SUBACCOUNT_USER",
+    },
+  });
+
+  await clerkClient.users.updateUserMetadata(user.id, {
+    privateMetadata: { role: newUser.role || "SUBACCOUNT_USER" },
+  });
+
+  return userData;
+};
+
+export const upsertAgency = async (agency: Agency, price?: Plan) => {
+  if (!agency.companyEmail) return null;
+  try {
+    const agencyDetails = await db.agency.upsert({
+      where: {
+        id: agency.id,
+      },
+      update: agency,
+      create: {
+        users: { connect: { email: agency.companyEmail } },
+        ...agency,
+        SidebarOption: {
+          create: [
+            {
+              name: "Dashboard",
+              icon: "category",
+              link: `/agency/${agency.id}`,
+            },
+            {
+              name: "Launchpad",
+              icon: "clipboardIcon",
+              link: `/agency/${agency.id}/launchpad`,
+            },
+            {
+              name: "Billing",
+              icon: "payment",
+              link: `/agency/${agency.id}/billing`,
+            },
+            {
+              name: "Settings",
+              icon: "settings",
+              link: `/agency/${agency.id}/settings`,
+            },
+            {
+              name: "Sub Accounts",
+              icon: "person",
+              link: `/agency/${agency.id}/all-subaccounts`,
+            },
+            {
+              name: "Team",
+              icon: "shield",
+              link: `/agency/${agency.id}/team`,
+            },
+          ],
+        },
+      },
+    });
+
+    return agencyDetails;
+  } catch (error) {
+    console.log("[AGENCY_DETAILS_QUERIES]", error);
+  }
+};
+
+export const getNotificationAndUser = async (agencyId: string) => {
+  try {
+    const response = await db.notification.findMany({
+      where: { agencyId },
+      include: { User: true },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
