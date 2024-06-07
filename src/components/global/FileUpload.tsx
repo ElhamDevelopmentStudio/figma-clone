@@ -20,7 +20,7 @@ const FileUpload = ({ apiEndpoint, onChange, value }: Props) => {
           <div className="relative w-40 h-40">
             <Image
               src={value}
-              alt="uploaded Image"
+              alt="uploaded image"
               className="object-contain"
               fill
             />
@@ -38,14 +38,13 @@ const FileUpload = ({ apiEndpoint, onChange, value }: Props) => {
             </a>
           </div>
         )}
-        <Button variant="ghost" type="button" onClick={() => onChange("")}>
+        <Button onClick={() => onChange("")} variant="ghost" type="button">
           <X className="h-4 w-4" />
           Remove Logo
         </Button>
       </div>
     );
   }
-
   return (
     <div className="w-full bg-muted/30">
       <UploadDropzone

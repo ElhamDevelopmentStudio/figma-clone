@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Agency,
   AgencySidebarOption,
   Role,
   SubAccount,
@@ -23,6 +24,9 @@ import {
 } from "../ui/command";
 import { CommandInput, CommandList } from "cmdk";
 import Link from "next/link";
+import { useModal } from "@/providers/ModalProvider";
+import CustomModal from "../global/CustomModal";
+import SubAccountDetails from "../forms/SubaccountDetails";
 
 type Props = {
   defaultOpen?: boolean;
@@ -43,6 +47,7 @@ const MenuOptions = ({
   user,
   id,
 }: Props) => {
+  const { setOpen } = useModal();
   const [isMounted, setIsMounted] = useState(false);
 
   const openState = useMemo(
@@ -220,10 +225,28 @@ const MenuOptions = ({
                   </CommandList>
                   {(user?.role === "AGENCY_OWNER" ||
                     user?.role === "AGENCY_ADMIN") && (
-                    <Button className="w-full flex gap-2">
-                      <PlusCircleIcon size={15} />
-                      Create Sub Account
-                    </Button>
+                    <SheetClose>
+                      <Button
+                        className="w-full flex gap-2"
+                        onClick={() => {
+                          setOpen(
+                            <CustomModal
+                              title="Create A Sub Account"
+                              subheading="You can switch between your agency account and sub accounts from the sidebar"
+                            >
+                              <SubAccountDetails
+                                agencyDetails={user?.Agency as Agency}
+                                userId={user?.id as string}
+                                userName={user?.name}
+                              />
+                            </CustomModal>
+                          );
+                        }}
+                      >
+                        <PlusCircleIcon size={15} />
+                        Create Sub Account
+                      </Button>
+                    </SheetClose>
                   )}
                 </Command>
               }

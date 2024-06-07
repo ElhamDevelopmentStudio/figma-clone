@@ -1,4 +1,5 @@
 import { getAuthUserDetails } from "@/lib/queries";
+import { off } from "process";
 import React from "react";
 import MenuOptions from "./MenuOptions";
 
@@ -9,9 +10,8 @@ type Props = {
 
 const Sidebar = async ({ id, type }: Props) => {
   const user = await getAuthUserDetails();
-  if (!user) {
-    return null;
-  }
+  if (!user) return null;
+
   if (!user.Agency) return;
 
   const details =
@@ -20,20 +20,19 @@ const Sidebar = async ({ id, type }: Props) => {
       : user?.Agency.SubAccount.find((subaccount) => subaccount.id === id);
 
   const isWhiteLabeledAgency = user.Agency.whiteLabel;
-
   if (!details) return;
 
-  let sidebarLogo = user.Agency.agencyLogo || "/assets/plura-logo.svg";
+  let sideBarLogo = user.Agency.agencyLogo || "/assets/plura-logo.svg";
 
   if (!isWhiteLabeledAgency) {
     if (type === "subaccount") {
-      sidebarLogo =
-        user.Agency.SubAccount.find((subaccount) => subaccount.id === id)
+      sideBarLogo =
+        user?.Agency.SubAccount.find((subaccount) => subaccount.id === id)
           ?.subAccountLogo || user.Agency.agencyLogo;
     }
   }
 
-  const sidebarOptions =
+  const sidebarOpt =
     type === "agency"
       ? user.Agency.SidebarOption || []
       : user.Agency.SubAccount.find((subaccount) => subaccount.id === id)
@@ -49,10 +48,19 @@ const Sidebar = async ({ id, type }: Props) => {
   return (
     <>
       <MenuOptions
+        defaultOpen={true}
         details={details}
         id={id}
-        sidebarLogo={sidebarLogo}
-        sidebarOption={sidebarOptions}
+        sidebarLogo={sideBarLogo}
+        sidebarOption={sidebarOpt}
+        subAccounts={subaccounts}
+        user={user}
+      />
+      <MenuOptions
+        details={details}
+        id={id}
+        sidebarLogo={sideBarLogo}
+        sidebarOption={sidebarOpt}
         subAccounts={subaccounts}
         user={user}
       />
