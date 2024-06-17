@@ -424,3 +424,20 @@ export const changeUserPermissions = async (
     console.log("[SetLoadingPermission] could not change permissions", error);
   }
 };
+
+export const getSubaccountDetails = async (subaccountId: string) => {
+  const response = await db.subAccount.findUnique({
+    where: {
+      id: subaccountId,
+    },
+  });
+  return response;
+};
+
+export const deletedSubAccount = async (subAccountId: string) => {
+  const response = await db.subAccount.delete({
+    where: { id: subAccountId },
+  });
+
+  return response;
+};
