@@ -456,7 +456,19 @@ export const deleteUser = async (userId: string) => {
 export const getUser = async (id: string) => {
   const user = await db.user.findUnique({
     where: {
-      id,
+      id: id,
+    },
+    include: {
+      Permissions: {
+        include: {
+          SubAccount: true,
+        },
+      },
+      Agency: {
+        include: {
+          SubAccount: true,
+        },
+      },
     },
   });
 

@@ -3,7 +3,7 @@ import React from "react";
 import DataTable from "./DataTable";
 import { Plus } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
-import { columns } from "./columns";
+import { columns } from "./Columns";
 import SendInvitation from "@/components/forms/SendInvitation";
 
 type Props = {
