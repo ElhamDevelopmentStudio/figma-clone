@@ -568,6 +568,7 @@ export const getLanesWithTicketAndTags = async (pipelineId: string) => {
   return response;
 };
 
+
 export const upsertFunnel = async (
   subaccountId: string,
   funnel: z.infer<typeof CreateFunnelFormSchema> & { liveProducts: string },
@@ -595,6 +596,13 @@ export const upsertPipeline = async (
     create: pipeline,
   });
 
+  return response;
+};
+
+export const deletePipeline = async (pipelineId: string) => {
+  const response = await db.pipeline.delete({
+    where: { id: pipelineId },
+  });
   return response;
 };
 

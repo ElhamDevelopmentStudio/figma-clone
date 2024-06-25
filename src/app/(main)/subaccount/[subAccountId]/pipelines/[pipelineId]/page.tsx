@@ -1,10 +1,11 @@
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { db } from "@/lib/db";
 import { getLanesWithTicketAndTags, getPipelineDetails } from "@/lib/queries";
 import { LaneDetails } from "@/lib/types";
 import { redirect } from "next/navigation";
 import React from "react";
 import PipelineInfoBar from "../_components/PipelineInfoBar";
+import PipelineSettings from "../_components/PipelineSettings";
 
 type Props = {
   params: { subaccountId: string; pipelineId: string };
@@ -36,6 +37,14 @@ const PipelinesIdPage = async ({ params }: Props) => {
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </div>
       </TabsList>
+      <TabsContent value="view">Pipeline View</TabsContent>
+      <TabsContent value="settings">
+        <PipelineSettings
+          pipelineId={params.pipelineId}
+          pipelines={pipelines}
+          subaccountId={params.subaccountId}
+        />
+      </TabsContent>
     </Tabs>
   );
 };
