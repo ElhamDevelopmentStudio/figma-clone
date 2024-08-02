@@ -3,7 +3,7 @@ import LaneForm from "@/components/forms/LaneForm";
 import CustomModal from "@/components/global/CustomModal";
 import { Button } from "@/components/ui/button";
 import {
-  LaneDetail,
+  LaneDetails,
   PipelineDetailsWithLanesCardsTagsTickets,
   TicketAndTags,
 } from "@/lib/types";
@@ -12,11 +12,11 @@ import { Lane, Ticket } from "@prisma/client";
 import { Flag, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { DragDropContext, DropResult, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd";
 import PipelineLane from "./PipelineLane";
 
 type Props = {
-  lanes: LaneDetail[];
+  lanes: LaneDetails[];
   pipelineId: string;
   subaccountId: string;
   pipelineDetails: PipelineDetailsWithLanesCardsTagsTickets;
@@ -34,11 +34,7 @@ const PipelineView = ({
 }: Props) => {
   const { setOpen } = useModal();
   const router = useRouter();
-  const [allLanes, setAllLanes] = useState<LaneDetail[]>([]);
-
-  useEffect(() => {
-    setAllLanes(lanes);
-  }, [lanes]);
+  const [allLanes, setAllLanes] = useState<LaneDetails[]>([]);
 
   const ticketsFromAllLanes: TicketAndTags[] = [];
   lanes.forEach((item) => {
@@ -47,6 +43,10 @@ const PipelineView = ({
     });
   });
   const [allTickets, setAllTickets] = useState(ticketsFromAllLanes);
+
+  useEffect(() => {
+    setAllLanes(lanes);
+  }, [lanes]);
 
   const handleAddLane = () => {
     setOpen(
@@ -151,7 +151,7 @@ const PipelineView = ({
         >
           {(provided) => (
             <div
-              className="flex item-center gap-x-2 overflow-scroll"
+              className="flex items-center gap-x-2 overflow-hidden  "
               {...provided.droppableProps}
               ref={provided.innerRef}
             >

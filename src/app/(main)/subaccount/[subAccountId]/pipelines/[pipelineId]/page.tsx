@@ -6,7 +6,7 @@ import {
   updateLanesOrder,
   updateTicketsOrder,
 } from "@/lib/queries";
-import { LaneDetail } from "@/lib/types";
+import { LaneDetails } from "@/lib/types";
 import { redirect } from "next/navigation";
 import React from "react";
 import PipelineInfoBar from "../_components/PipelineInfoBar";
@@ -17,7 +17,7 @@ type Props = {
   params: { subaccountId: string; pipelineId: string };
 };
 
-const PipelinePage = async ({ params }: Props) => {
+const PipelinesIdPage = async ({ params }: Props) => {
   const pipelineDetails = await getPipelineDetails(params.pipelineId);
   if (!pipelineDetails)
     return redirect(`/subaccount/${params.subaccountId}/pipelines`);
@@ -28,7 +28,7 @@ const PipelinePage = async ({ params }: Props) => {
 
   const lanes = (await getLanesWithTicketAndTags(
     params.pipelineId
-  )) as LaneDetail[];
+  )) as LaneDetails[];
 
   return (
     <Tabs defaultValue="view" className="w-full">
@@ -64,4 +64,4 @@ const PipelinePage = async ({ params }: Props) => {
   );
 };
 
-export default PipelinePage;
+export default PipelinesIdPage;
