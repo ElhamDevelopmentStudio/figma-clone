@@ -1,3 +1,7 @@
+import BlurPage from "@/components/global/BlurPage";
+import InfoBar from "@/components/global/InfoBar";
+import Sidebar from "@/components/sidebar";
+import Unauthorized from "@/components/unauthorized.tsx";
 import {
   getNotificationAndUser,
   verifyAndAcceptInvitation,
@@ -5,29 +9,31 @@ import {
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import React from "react";
-import UnauthorizedPage from "../unauthorized/page";
-import Sidebar from "@/components/sidebar";
-import BlurPage from "@/components/global/BlurPage";
-import InfoBar from "@/components/global/InfoBar";
 
 type Props = {
   children: React.ReactNode;
   params: { agencyId: string };
 };
 
-const AgencyIdLayout = async ({ children, params }: Props) => {
+const layout = async ({ children, params }: Props) => {
   const agencyId = await verifyAndAcceptInvitation();
   const user = await currentUser();
-  if (!user) return redirect("/");
-  if (!agencyId) return redirect("/agency");
+
+  if (!user) {
+    return redirect("/");
+  }
+
+  if (!agencyId) {
+    return redirect("/agency");
+  }
+
   if (
     user.privateMetadata.role !== "AGENCY_OWNER" &&
     user.privateMetadata.role !== "AGENCY_ADMIN"
   )
-    return <UnauthorizedPage />;
+    return <Unauthorized />;
 
   let allNoti: any = [];
-
   const notifications = await getNotificationAndUser(agencyId);
   if (notifications) allNoti = notifications;
 
@@ -35,7 +41,7 @@ const AgencyIdLayout = async ({ children, params }: Props) => {
     <div className="h-screen overflow-hidden">
       <Sidebar id={params.agencyId} type="agency" />
       <div className="md:pl-[300px]">
-        <InfoBar notifications={allNoti} />
+        <InfoBar notifications={allNoti} role={allNoti.User?.role} />
         <div className="relative">
           <BlurPage>{children}</BlurPage>
         </div>
@@ -44,4 +50,4 @@ const AgencyIdLayout = async ({ children, params }: Props) => {
   );
 };
 
-export default AgencyIdLayout;
+export default layout;

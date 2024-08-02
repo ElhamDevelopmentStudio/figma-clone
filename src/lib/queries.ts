@@ -137,10 +137,10 @@ export const createTeamUser = async (agencyId: string, user: User) => {
   return response;
 };
 
+
 export const verifyAndAcceptInvitation = async () => {
   const user = await currentUser();
   if (!user) return redirect("/sign-in");
-
   const invitationExists = await db.invitation.findUnique({
     where: {
       email: user.emailAddresses[0].emailAddress,
@@ -159,10 +159,9 @@ export const verifyAndAcceptInvitation = async () => {
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-
     await saveActivityLogsNotification({
       agencyId: invitationExists?.agencyId,
-      description: "Joined",
+      description: `Joined`,
       subAccountId: undefined,
     });
 
@@ -174,23 +173,18 @@ export const verifyAndAcceptInvitation = async () => {
       });
 
       await db.invitation.delete({
-        where: {
-          email: userDetails.email,
-        },
+        where: { email: userDetails.email },
       });
 
       return userDetails.agencyId;
-    } else {
-      return null;
-    }
+    } else return null;
   } else {
     const agency = await db.user.findUnique({
       where: {
         email: user.emailAddresses[0].emailAddress,
       },
     });
-
-    return agency ? agency.id : null;
+    return agency ? agency.agencyId : null;
   }
 };
 
@@ -796,3 +790,27 @@ export const upsertTag = async (
 
   return response;
 };
+
+export const getTagsForSubaccount = async (subaccountId: string) => {
+  const response = await db.subAccount.findUnique({
+    where: { id: subaccountId },
+    select: { Tags: true },
+  });
+  return response;
+};
+
+export const deleteTag = async (tagId: string) => {
+  const response = await db.tag.delete({ where: { id: tagId } });
+  return response;
+};
+
+export const upsertContact = async (
+  contact: Prisma.ContactUncheckedCreateInput
+) => {
+  const response = await db.contact.upsert({
+    where: { id: contact.id || v4() },
+    update: contact,
+    create: contact,
+  });
+  return response;
+};  
