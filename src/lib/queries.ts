@@ -498,6 +498,7 @@ export const sendInvitation = async (
         throughInvitation: true,
         role,
       },
+      ignoreExisting: true,
     });
   } catch (error) {
     console.log(error);
@@ -813,4 +814,28 @@ export const upsertContact = async (
     create: contact,
   });
   return response;
-};  
+};
+
+export const getFunnels = async (subacountId: string) => {
+  const funnels = await db.funnel.findMany({
+    where: { subAccountId: subacountId },
+    include: { FunnelPages: true },
+  });
+
+  return funnels;
+};
+
+export const getFunnel = async (funnelId: string) => {
+  const funnel = await db.funnel.findUnique({
+    where: { id: funnelId },
+    include: {
+      FunnelPages: {
+        orderBy: {
+          order: "asc",
+        },
+      },
+    },
+  });
+
+  return funnel;
+};
