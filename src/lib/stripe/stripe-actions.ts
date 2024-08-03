@@ -1,6 +1,6 @@
 "use server";
-import { db } from "@/lib/db";
 import Stripe from "stripe";
+import { db } from "../db";
 import { stripe } from ".";
 
 export const subscriptionCreated = async (
@@ -10,15 +10,15 @@ export const subscriptionCreated = async (
   try {
     const agency = await db.agency.findFirst({
       where: {
-        customerId: customerId,
+        customerId,
       },
       include: {
-        Subscription: true,
+        SubAccount: true,
       },
     });
-
-    if (!agency)
-      throw new Error("Could not find the agency to upsert the subscription.");
+    if (!agency) {
+      throw new Error("Could not find and agency to upsert the subscription.");
+    }
 
     const data = {
       active: subscription.status === "active",
@@ -32,7 +32,7 @@ export const subscriptionCreated = async (
       plan: subscription.plan.id,
     };
 
-    const response = await db.subscription.upsert({
+    const res = await db.subscription.upsert({
       where: {
         agencyId: agency.id,
       },

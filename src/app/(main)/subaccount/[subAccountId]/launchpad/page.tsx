@@ -16,40 +16,43 @@ import Link from "next/link";
 import React from "react";
 
 type Props = {
-  params: {
-    subAccountId: string;
+  searchParams: {
+    state: string;
+    code: string;
   };
-  searchParams: { state: string; code: string };
+  params: { subAccountId: string };
 };
 
-const Launchpad = async ({ params, searchParams }: Props) => {
-  const subAccountDetails = await db.subAccount.findUnique({
+const LaunchPad = async ({ params, searchParams }: Props) => {
+  const subaccountDetails = await db.subAccount.findUnique({
     where: {
       id: params.subAccountId,
     },
   });
 
-  if (!subAccountDetails) return;
+  if (!subaccountDetails) {
+    return;
+  }
 
   const allDetailsExist =
-    subAccountDetails.address &&
-    subAccountDetails.subAccountLogo &&
-    subAccountDetails.city &&
-    subAccountDetails.companyEmail &&
-    subAccountDetails.companyPhone &&
-    subAccountDetails.country &&
-    subAccountDetails.name &&
-    subAccountDetails.state;
+    subaccountDetails.address &&
+    subaccountDetails.subAccountLogo &&
+    subaccountDetails.city &&
+    subaccountDetails.companyEmail &&
+    subaccountDetails.companyPhone &&
+    subaccountDetails.country &&
+    subaccountDetails.name &&
+    subaccountDetails.state;
 
   const stripeOAuthLink = getStripeOAuthLink(
     "subaccount",
-    `launchpad___${subAccountDetails.id}`
+    `launchpad___${subaccountDetails.id}`
   );
 
   let connectedStripeAccount = false;
 
   if (searchParams.code) {
-    if (!subAccountDetails.connectAccountId) {
+    if (!subaccountDetails.connectAccountId) {
       try {
         const response = await stripe.oauth.token({
           grant_type: "authorization_code",
@@ -105,7 +108,7 @@ const Launchpad = async ({ params, searchParams }: Props) => {
                     used to run payouts.
                   </p>
                 </div>
-                {subAccountDetails.connectAccountId ||
+                {subaccountDetails.connectAccountId ||
                 connectedStripeAccount ? (
                   <CheckCircleIcon
                     size={50}
@@ -123,7 +126,7 @@ const Launchpad = async ({ params, searchParams }: Props) => {
               <div className="flex justify-between items-center w-full h-20 border p-4 rounded-lg">
                 <div className="flex items-center gap-4">
                   <Image
-                    src={subAccountDetails.subAccountLogo}
+                    src={subaccountDetails.subAccountLogo}
                     alt="App logo"
                     height={80}
                     width={80}
@@ -139,7 +142,7 @@ const Launchpad = async ({ params, searchParams }: Props) => {
                 ) : (
                   <Link
                     className="bg-primary py-2 px-4 rounded-md text-white"
-                    href={`/subaccount/${subAccountDetails.id}/settings`}
+                    href={`/subaccount/${subaccountDetails.id}/settings`}
                   >
                     Start
                   </Link>
@@ -153,4 +156,4 @@ const Launchpad = async ({ params, searchParams }: Props) => {
   );
 };
 
-export default Launchpad;
+export default LaunchPad;
