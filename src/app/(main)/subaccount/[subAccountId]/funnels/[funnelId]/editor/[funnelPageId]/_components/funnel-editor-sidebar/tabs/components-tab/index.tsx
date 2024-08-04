@@ -13,6 +13,9 @@ import LinkPlaceholder from "./LinkPlaceholder";
 import TwoColumnsPlaceholder from "./TwoColumnsPlaceholder";
 import ContactFormComponentPlaceholder from "./ContactFormComponentPlaceholder";
 import CheckoutPlaceholder from "./CheckoutPlaceholder";
+import ImagePlaceholder from "./ImageComponentPlaceholder";
+import SectionPlaceholder from "./SectionPlaceholder";
+import ThreeColumnsPlaceholder from "./ThreeColumnsPlaceholder";
 
 type Props = {};
 
@@ -30,6 +33,12 @@ const ComponentsTab = (props: Props) => {
       group: "elements",
     },
     {
+      Component: <SectionPlaceholder />,
+      label: "Section",
+      id: "section",
+      group: "layout",
+    },
+    {
       Component: <ContainerPlaceholder />,
       label: "Container",
       id: "container",
@@ -39,6 +48,12 @@ const ComponentsTab = (props: Props) => {
       Component: <TwoColumnsPlaceholder />,
       label: "2 Columns",
       id: "2Col",
+      group: "layout",
+    },
+    {
+      Component: <ThreeColumnsPlaceholder />,
+      label: "3 Columns",
+      id: "3Col",
       group: "layout",
     },
     {
@@ -65,6 +80,12 @@ const ComponentsTab = (props: Props) => {
       id: "link",
       group: "elements",
     },
+    {
+      Component: <ImagePlaceholder />,
+      label: "Image",
+      id: "image",
+      group: "elements",
+    },
   ];
 
   return (
@@ -89,7 +110,7 @@ const ComponentsTab = (props: Props) => {
             ))}
         </AccordionContent>
       </AccordionItem>
-      <AccordionItem value="Elements" className="px-6 py-0 ">
+      <AccordionItem value="Elements" className="px-6 py-0">
         <AccordionTrigger className="!no-underline">Elements</AccordionTrigger>
         <AccordionContent className="flex flex-wrap gap-2 ">
           {elements

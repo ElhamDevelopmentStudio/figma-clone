@@ -13,9 +13,9 @@ const ContainerPlaceholder = (props: Props) => {
     <div
       draggable
       onDragStart={(e) => handleDragStart(e, "container")}
-      className=" h-14 w-14 bg-muted/70 rounded-lg p-2 flex flex-row gap-[4px]"
+      className=" h-14 w-14 bg-muted/70 rounded-lg p-2 flex flex-row gap-[4px] cursor-grab"
     >
-      <div className="border-dashed border-[1px] h-full rounded-sm bg-muted border-muted-foreground/50 w-full" />
+      <div className="border-dashed border-[1px] h-full rounded-sm bg-muted border-muted-foreground/50 w-full " />
     </div>
   );
 };

@@ -84,12 +84,16 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
           "Pages other than the first page in the funnel require a path name example 'secondstep'.",
       });
     try {
-      const response = await upsertFunnelPage(subaccountId, funnelId, {
-        ...values,
-        id: defaultData?.id || v4(),
-        order: defaultData?.order || order,
-        pathName: values.pathName || "",
-      });
+      const response = await upsertFunnelPage(
+        subaccountId,
+        {
+          ...values,
+          id: defaultData?.id || v4(),
+          order: defaultData?.order || order,
+          pathName: values.pathName || "",
+        },
+        funnelId
+      );
 
       await saveActivityLogsNotification({
         agencyId: undefined,
@@ -229,15 +233,19 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
                       (funnel) => funnel.id === funnelId
                     )?.FunnelPages.length;
 
-                    await upsertFunnelPage(subaccountId, funnelId, {
-                      ...defaultData,
-                      id: v4(),
-                      order: lastFunnelPage ? lastFunnelPage : 0,
-                      visits: 0,
-                      name: `${defaultData.name} Copy`,
-                      pathName: `${defaultData.pathName}copy`,
-                      content: defaultData.content,
-                    });
+                    await upsertFunnelPage(
+                      subaccountId,
+                      {
+                        ...defaultData,
+                        id: v4(),
+                        order: lastFunnelPage ? lastFunnelPage : 0,
+                        visits: 0,
+                        name: `${defaultData.name} Copy`,
+                        pathName: `${defaultData.pathName}copy`,
+                        content: defaultData.content,
+                      },
+                      funnelId
+                    );
                     toast({
                       title: "Success",
                       description: "Saves Funnel Page Details",

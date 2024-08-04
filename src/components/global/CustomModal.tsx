@@ -1,46 +1,31 @@
 "use client";
-
+import { useModal } from "@/providers/ModalProvider";
 import React from "react";
-
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
-  DialogTitle,
 } from "../ui/dialog";
-import { ScrollArea } from "../ui/scroll-area";
-import { useModal } from "@/providers/ModalProvider";
+import { DialogTitle } from "@radix-ui/react-dialog";
 
-interface CustomModalProps {
+type Props = {
   title: string;
-  subTitle?: string;
+  subheading: string;
   children: React.ReactNode;
-  scrollShadow?: boolean;
   defaultOpen?: boolean;
-}
+};
 
-const CustomModal: React.FC<CustomModalProps> = ({
-  children,
-  defaultOpen,
-  subTitle,
-  title,
-  scrollShadow = true,
-}) => {
+const CustomModal = ({ children, defaultOpen, subheading, title }: Props) => {
   const { isOpen, setClose } = useModal();
-
   return (
     <Dialog open={isOpen || defaultOpen} onOpenChange={setClose}>
-      <DialogContent className="bg-card max-w-xl">
-        <ScrollArea scrollShadow={scrollShadow} className="md:max-h-[700px]">
-          <div className="flex flex-col gap-4">
-            <DialogHeader className="text-left">
-              <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
-              <DialogDescription>{subTitle}</DialogDescription>
-            </DialogHeader>
-            {children}
-          </div>
-        </ScrollArea>
+      <DialogContent className="overflow-auto md:max-h-[700px] md:h-fit h-screen bg-card">
+        <DialogHeader className="pt-8 text-left">
+          <DialogTitle className="text-2xl font-bold">{title}</DialogTitle>
+          <DialogDescription>{subheading}</DialogDescription>
+          {children}
+        </DialogHeader>
       </DialogContent>
     </Dialog>
   );

@@ -1,112 +1,77 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
-import { EditorElement, useEditor } from "@/providers/editor/editor-provider";
-import clsx from "clsx";
+
+import React from "react";
 import { Trash } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
 
-type Props = {
+import { Badge } from "@/components/ui/badge";
+
+import type { EditorElement } from "@/lib/types/editor";
+import { cn } from "@/lib/utils";
+import { formatTextOnKeyboard } from "@/lib/editor/utils";
+import { useEditor } from "@/providers/editor/editor-provider";
+
+interface EditorTextProps {
   element: EditorElement;
-};
+}
 
-const TextComponent = (props: Props) => {
-  const { dispatch, state } = useEditor();
-  const [isResizing, setIsResizing] = useState(false);
-  const textComponentRef = useRef<HTMLSpanElement>(null);
+const EditorText: React.FC<EditorTextProps> = ({ element }) => {
+  const { dispatch, state: editorState } = useEditor();
+  const { editor } = editorState;
 
   const handleDeleteElement = () => {
     dispatch({
       type: "DELETE_ELEMENT",
-      payload: { elementDetails: props.element },
+      payload: {
+        elementDetails: element,
+      },
     });
   };
-  const styles = props.element.styles;
 
-  const handleOnClickBody = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleClickOnBody = (event: React.MouseEvent) => {
+    event.stopPropagation();
+
     dispatch({
       type: "CHANGE_CLICKED_ELEMENT",
       payload: {
-        elementDetails: props.element,
+        elementDetails: element,
       },
     });
   };
 
-  const handleResizeStart = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsResizing(true);
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    formatTextOnKeyboard(event, editor, dispatch);
   };
-
-  const handleResizeEnd = () => {
-    setIsResizing(false);
-  };
-
-  const handleResize = (e: MouseEvent) => {
-    if (!isResizing || !textComponentRef.current) return;
-
-    const container = textComponentRef.current;
-    const newHeight = e.clientY - container.getBoundingClientRect().top;
-
-    dispatch({
-      type: "UPDATE_ELEMENT",
-      payload: {
-        elementDetails: {
-          ...props.element,
-          styles: {
-            ...props.element.styles,
-            height: `${newHeight}px`,
-          },
-        },
-      },
-    });
-  };
-
-  useEffect(() => {
-    if (isResizing) {
-      window.addEventListener("mousemove", handleResize);
-      window.addEventListener("mouseup", handleResizeEnd);
-    }
-
-    return () => {
-      window.removeEventListener("mousemove", handleResize);
-      window.removeEventListener("mouseup", handleResizeEnd);
-    };
-  }, [isResizing]);
 
   return (
     <div
-      style={styles}
-      className={clsx(
-        "p-[2px] w-full m-[5px] relative text-[16px] transition-all",
+      className={cn(
+        "p-0.5 w-full m-1 relative text-base min-h-7 transition-all",
         {
-          "!border-blue-500":
-            state.editor.selectedElement.id === props.element.id,
-
-          "!border-solid": state.editor.selectedElement.id === props.element.id,
-          "border-dashed border-[1px] border-slate-300": !state.editor.liveMode,
+          "border-blue-500 border-solid":
+            editor.selectedElement.id === element.id,
+          "border-dashed border": !editor.liveMode,
         }
       )}
-      onClick={handleOnClickBody}
+      style={element.styles}
+      onClick={handleClickOnBody}
     >
-      {state.editor.selectedElement.id === props.element.id &&
-        !state.editor.liveMode && (
-          <Badge className="absolute -top-[23px] -left-[1px] rounded-none rounded-t-lg">
-            {state.editor.selectedElement.name}
-          </Badge>
-        )}
-
+      {editor.selectedElement.id === element.id && !editor.liveMode && (
+        <Badge className="absolute -top-6 -left-0.5 rounded-none rounded-t-md">
+          {editor.selectedElement.name}
+        </Badge>
+      )}
       <span
-        className="p-1"
-        contentEditable={!state.editor.liveMode}
-        ref={textComponentRef}
+        contentEditable={!editor.liveMode}
+        className="outline-none"
+        onKeyDown={onKeyDown}
         onBlur={(e) => {
           const spanElement = e.target as HTMLSpanElement;
+
           dispatch({
             type: "UPDATE_ELEMENT",
             payload: {
               elementDetails: {
-                ...props.element,
+                ...element,
                 content: {
                   innerText: spanElement.innerText,
                 },
@@ -115,28 +80,21 @@ const TextComponent = (props: Props) => {
           });
         }}
       >
-        {!Array.isArray(props.element.content) &&
-          props.element.content.innerText}
+        {!Array.isArray(element.content) && element.content.innerText}
       </span>
-      {state.editor.selectedElement.id === props.element.id &&
-        !state.editor.liveMode && (
+      {editor.selectedElement.id === element.id &&
+        !editor.liveMode &&
+        !Array.isArray(element.content) &&
+        element.content.innerText && (
           <div className="absolute bg-primary px-2.5 py-1 text-xs font-bold -top-[25px] -right-[1px] rounded-none rounded-t-lg !text-white">
             <Trash
-              className="cursor-pointer"
-              size={16}
+              className="cursor-pointer w-4 h-4"
               onClick={handleDeleteElement}
             />
           </div>
-        )}
-      {state.editor.selectedElement.id === props.element.id &&
-        !state.editor.liveMode && (
-          <div
-            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
-            onMouseDown={handleResizeStart}
-          />
         )}
     </div>
   );
 };
 
-export default TextComponent;
+export default EditorText;

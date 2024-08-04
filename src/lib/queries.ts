@@ -21,7 +21,6 @@ import { v4 } from "uuid";
 import {
   CreateFunnelFormSchema,
   CreateMediaType,
-  FunnelDetailsSchema,
   UpsertFunnelPage,
 } from "./types";
 import { z } from "zod";
@@ -579,19 +578,17 @@ export const getLanesWithTicketAndTags = async (pipelineId: string) => {
 };
 
 export const upsertFunnel = async (
-  subAccountId: string,
-  funnel: FunnelDetailsSchema & { liveProducts: string },
+  subaccountId: string,
+  funnel: z.infer<typeof CreateFunnelFormSchema> & { liveProducts: string },
   funnelId: string
 ) => {
   const response = await db.funnel.upsert({
-    where: {
-      id: funnelId,
-    },
+    where: { id: funnelId },
     update: funnel,
     create: {
       ...funnel,
       id: funnelId || v4(),
-      subAccountId,
+      subAccountId: subaccountId,
     },
   });
 
@@ -823,22 +820,20 @@ export const upsertContact = async (
   return response;
 };
 
-export const getFunnels = async (subAccountId: string) => {
-  const response = await db.funnel.findMany({
-    where: {
-      subAccountId,
-    },
-    include: {
-      FunnelPages: true,
-    },
+export const getFunnels = async (subacountId: string) => {
+  const funnels = await db.funnel.findMany({
+    where: { subAccountId: subacountId },
+    include: { FunnelPages: true },
   });
 
-  return response;
+  return funnels;
 };
 
 export const getFunnel = async (funnelId: string) => {
-  const funnel = await db.funnel.findUnique({
-    where: { id: funnelId },
+  const response = await db.funnel.findUnique({
+    where: {
+      id: funnelId,
+    },
     include: {
       FunnelPages: {
         orderBy: {
@@ -848,7 +843,7 @@ export const getFunnel = async (funnelId: string) => {
     },
   });
 
-  return funnel;
+  return response;
 };
 
 export const updateFunnelProducts = async (
@@ -863,20 +858,16 @@ export const updateFunnelProducts = async (
 };
 
 export const upsertFunnelPage = async (
-  subAccountId: string,
-  funnelId: string,
-  funnelPage: Prisma.FunnelPageCreateWithoutFunnelInput
+  subaccountId: string,
+  funnelPage: UpsertFunnelPage,
+  funnelId: string
 ) => {
-  if (!subAccountId || !funnelId) return undefined;
-
+  if (!subaccountId || !funnelId) return;
   const response = await db.funnelPage.upsert({
-    where: {
-      id: funnelPage.id || "",
-    },
-    update: funnelPage,
+    where: { id: funnelPage.id || "" },
+    update: { ...funnelPage },
     create: {
       ...funnelPage,
-      funnelId,
       content: funnelPage.content
         ? funnelPage.content
         : JSON.stringify([
@@ -888,12 +879,11 @@ export const upsertFunnelPage = async (
               type: "__body",
             },
           ]),
+      funnelId,
     },
   });
 
-  // reset page cache
-  revalidatePath(`/subaccount/${subAccountId}/funnels/${funnelId}`);
-
+  revalidatePath(`/subaccount/${subaccountId}/funnels/${funnelId}`, "page");
   return response;
 };
 

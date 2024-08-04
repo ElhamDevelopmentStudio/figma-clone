@@ -21,25 +21,103 @@ const Container = ({ element }: Props) => {
     const componentType = e.dataTransfer.getData("componentType") as EditorBtns;
 
     switch (componentType) {
-      case "text":
+      case "text": {
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
             containerId: id,
             elementDetails: {
-              content: { innerText: "Text Element" },
+              content: {
+                innerText: "Text Element",
+              },
               id: v4(),
               name: "Text",
+              type: "text",
               styles: {
                 color: "black",
                 ...defaultStyles,
               },
-              type: "text",
             },
           },
         });
+
         break;
-      case "link":
+      }
+      case "image": {
+        dispatch({
+          type: "ADD_ELEMENT",
+          payload: {
+            containerId: id,
+            elementDetails: {
+              content: {
+                src: "https://cdn.pixabay.com/photo/2016/05/05/02/37/sunset-1373171_1280.jpg",
+                alt: "Image description",
+              },
+              id: v4(),
+              name: "Image",
+              type: "image",
+              styles: {
+                color: "black",
+                width: "1000px",
+                height: "600px",
+                aspectRatio: "1/1",
+                marginLeft: "auto",
+                marginRight: "auto",
+                ...defaultStyles,
+              },
+            },
+          },
+        });
+
+        break;
+      }
+      case "section": {
+        dispatch({
+          type: "ADD_ELEMENT",
+          payload: {
+            containerId: id,
+            elementDetails: {
+              content: [
+                {
+                  content: [],
+                  id: v4(),
+                  name: "Container",
+                  styles: { ...defaultStyles, width: "100%" },
+                  type: "container",
+                },
+              ],
+              id: v4(),
+              name: "Section",
+              type: "section",
+              styles: {
+                ...defaultStyles,
+              },
+            },
+          },
+        });
+
+        break;
+      }
+      case "container": {
+        dispatch({
+          type: "ADD_ELEMENT",
+          payload: {
+            containerId: id,
+            elementDetails: {
+              content: [],
+              id: v4(),
+              name: "Container",
+              type: "container",
+              styles: {
+                ...defaultStyles,
+              },
+            },
+          },
+        });
+
+        break;
+      }
+      case "link": {
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
@@ -59,15 +137,17 @@ const Container = ({ element }: Props) => {
             },
           },
         });
+
         break;
-      case "video":
+      }
+      case "video": {
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
             containerId: id,
             elementDetails: {
               content: {
-                src: "https://www.youtube.com/embed/VNsd8Yo5zvc",
+                src: "https://www.youtube.com/embed/so1_VXaGqmM?si=2lBxVOuA57XMv0JX",
               },
               id: v4(),
               name: "Video",
@@ -76,29 +156,20 @@ const Container = ({ element }: Props) => {
             },
           },
         });
+
         break;
-      case "container":
+      }
+      case "contactForm": {
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
             containerId: id,
             elementDetails: {
-              content: [],
-              id: v4(),
-              name: "Container",
-              styles: { ...defaultStyles },
-              type: "container",
-            },
-          },
-        });
-        break;
-      case "contactForm":
-        dispatch({
-          type: "ADD_ELEMENT",
-          payload: {
-            containerId: id,
-            elementDetails: {
-              content: [],
+              content: {
+                formTitle: "Want a free quote? We can help you",
+                formDescription: "Get in touch",
+                formButton: "Submit",
+              },
               id: v4(),
               name: "Contact Form",
               styles: {},
@@ -106,8 +177,10 @@ const Container = ({ element }: Props) => {
             },
           },
         });
+
         break;
-      case "paymentForm":
+      }
+      case "paymentForm": {
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
@@ -115,14 +188,16 @@ const Container = ({ element }: Props) => {
             elementDetails: {
               content: [],
               id: v4(),
-              name: "Contact Form",
+              name: "Payment",
               styles: {},
               type: "paymentForm",
             },
           },
         });
+
         break;
-      case "2Col":
+      }
+      case "2Col": {
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
@@ -151,7 +226,48 @@ const Container = ({ element }: Props) => {
             },
           },
         });
+
         break;
+      }
+      case "3Col": {
+        dispatch({
+          type: "ADD_ELEMENT",
+          payload: {
+            containerId: id,
+            elementDetails: {
+              content: [
+                {
+                  content: [],
+                  id: v4(),
+                  name: "Container",
+                  styles: { ...defaultStyles, width: "100%" },
+                  type: "container",
+                },
+                {
+                  content: [],
+                  id: v4(),
+                  name: "Container",
+                  styles: { ...defaultStyles, width: "100%" },
+                  type: "container",
+                },
+                {
+                  content: [],
+                  id: v4(),
+                  name: "Container",
+                  styles: { ...defaultStyles, width: "100%" },
+                  type: "container",
+                },
+              ],
+              id: v4(),
+              name: "Three Columns",
+              styles: { ...defaultStyles, display: "flex" },
+              type: "3Col",
+            },
+          },
+        });
+
+        break;
+      }
     }
   };
 

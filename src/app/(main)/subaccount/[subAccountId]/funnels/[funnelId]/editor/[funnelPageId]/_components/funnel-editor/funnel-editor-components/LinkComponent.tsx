@@ -1,84 +1,83 @@
 "use client";
-import { Badge } from "@/components/ui/badge";
-import { EditorBtns } from "@/lib/constants";
 
-import { EditorElement, useEditor } from "@/providers/editor/editor-provider";
-import clsx from "clsx";
-import { Trash } from "lucide-react";
+import React from "react";
 import Link from "next/link";
+import { Trash } from "lucide-react";
 
-import React, { useRef } from "react";
+import { Badge } from "@/components/ui/badge";
 
-type Props = {
+import { type EditorElement } from "@/lib/types/editor";
+import { formatTextOnKeyboard } from "@/lib/editor/utils";
+import { cn } from "@/lib/utils";
+import { useEditor } from "@/providers/editor/editor-provider";
+
+interface EditorLinkProps {
   element: EditorElement;
-};
+}
 
-const LinkComponent = (props: Props) => {
-  const { dispatch, state } = useEditor();
-
-  const handleDragStart = (e: React.DragEvent, type: EditorBtns) => {
-    if (type === null) return;
-    e.dataTransfer.setData("componentType", type);
-  };
+const LinkComponent: React.FC<EditorLinkProps> = ({ element }) => {
+  const { dispatch, state: editorState } = useEditor();
+  const { editor } = editorState;
 
   const handleOnClickBody = (e: React.MouseEvent) => {
     e.stopPropagation();
     dispatch({
       type: "CHANGE_CLICKED_ELEMENT",
       payload: {
-        elementDetails: props.element,
+        elementDetails: element,
       },
     });
   };
 
-  const styles = props.element.styles;
-
   const handleDeleteElement = () => {
     dispatch({
       type: "DELETE_ELEMENT",
-      payload: { elementDetails: props.element },
+      payload: { elementDetails: element },
     });
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent) => {
+    formatTextOnKeyboard(event, editor, dispatch);
   };
 
   return (
     <div
-      style={styles}
-      draggable
-      onDragStart={(e) => handleDragStart(e, "text")}
+      style={element.styles}
+      draggable={!editor.liveMode}
       onClick={handleOnClickBody}
-      className={clsx(
-        "p-[2px] w-full m-[5px] relative text-[16px] transition-all",
+      className={cn(
+        "p-0.5 w-full m-1 relative text-base min-h-7 transition-all underline-offset-4",
         {
-          "!border-blue-500":
-            state.editor.selectedElement.id === props.element.id,
-
-          "!border-solid": state.editor.selectedElement.id === props.element.id,
-          "border-dashed border-[1px] border-slate-300": !state.editor.liveMode,
+          "!border-blue-500 !border-solid":
+            editor.selectedElement.id === element.id,
+          "!border-dashed !border": !editor.liveMode,
         }
       )}
     >
-      {state.editor.selectedElement.id === props.element.id &&
-        !state.editor.liveMode && (
-          <Badge className="absolute -top-[23px] -left-[1px] rounded-none rounded-t-lg ">
-            {state.editor.selectedElement.name}
-          </Badge>
-        )}
-      {!Array.isArray(props.element.content) &&
-        (state.editor.previewMode || state.editor.liveMode) && (
-          <Link href={props.element.content.href || "#"}>
-            {props.element.content.innerText}
+      {editor.selectedElement.id === element.id && !editor.liveMode && (
+        <Badge className="absolute -top-6 -left-0.5 rounded-none rounded-t-md">
+          {editor.selectedElement.name}
+        </Badge>
+      )}
+      {!Array.isArray(element.content) &&
+        (editor.previewMode || editor.liveMode) && (
+          <Link href={element.content.href || "#"}>
+            {element.content.innerText}
           </Link>
         )}
-      {!state.editor.previewMode && !state.editor.liveMode && (
+      {!editor.previewMode && !editor.liveMode && (
         <span
-          contentEditable={!state.editor.liveMode}
+          contentEditable={!editor.liveMode}
+          className="outline-none"
+          onKeyDown={onKeyDown}
           onBlur={(e) => {
             const spanElement = e.target as HTMLSpanElement;
+
             dispatch({
               type: "UPDATE_ELEMENT",
               payload: {
                 elementDetails: {
-                  ...props.element,
+                  ...element,
                   content: {
                     innerText: spanElement.innerText,
                   },
@@ -87,20 +86,18 @@ const LinkComponent = (props: Props) => {
             });
           }}
         >
-          {!Array.isArray(props.element.content) &&
-            props.element.content.innerText}
+          {!Array.isArray(element.content) && element.content.innerText}
         </span>
       )}
-      {state.editor.selectedElement.id === props.element.id &&
-        !state.editor.liveMode && (
-          <div className="absolute bg-primary px-2.5 py-1 text-xs font-bold  -top-[25px] -right-[1px] rounded-none rounded-t-lg !text-white">
-            <Trash
-              className="cursor-pointer"
-              size={16}
-              onClick={handleDeleteElement}
-            />
-          </div>
-        )}
+      {editor.selectedElement.id === element.id && !editor.liveMode && (
+        <div className="absolute bg-primary px-2.5 py-1 text-xs font-bold -top-[25px] -right-[1px] rounded-none rounded-t-lg !text-white">
+          <Trash
+            className="cursor-pointer"
+            size={16}
+            onClick={handleDeleteElement}
+          />
+        </div>
+      )}
     </div>
   );
 };

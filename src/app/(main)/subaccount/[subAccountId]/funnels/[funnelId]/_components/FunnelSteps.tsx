@@ -1,110 +1,112 @@
 "use client";
+import CreateFunnelPage from "@/components/forms/FunnelPage";
+import CustomModal from "@/components/global/CustomModal";
+import { AlertDialog } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { toast } from "@/components/ui/use-toast";
+import { upsertFunnelPage } from "@/lib/queries";
+import { FunnelsForSubAccount } from "@/lib/types";
+import { useModal } from "@/providers/ModalProvider";
+import { FunnelPage } from "@prisma/client";
+import { Check, ExternalLink, LucideEdit } from "lucide-react";
+import React, { useState } from "react";
 
-import React from "react";
-import Link from "next/link";
 import {
   DragDropContext,
+  DragStart,
+  DropResult,
   Droppable,
-  type DropResult,
 } from "react-beautiful-dnd";
-import { toast } from "sonner";
-import {
-  CheckCircle2,
-  ExternalLink,
-  LucideEdit,
-  PlusCircle,
-} from "lucide-react";
+import Link from "next/link";
+import FunnelPagePlaceholder from "@/components/icons/funnel-page-placeholder";
 
-import { AlertDialog } from "@/components/ui/alert-dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Button } from "@/components/ui/button";
-import FunnelStepCard from "./FunnelStepCard";
-
-import { type FunnelsForSubAccount } from "@/lib/types";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useModal } from "@/providers/ModalProvider";
-import { upsertFunnelPage } from "@/lib/queries";
-import CustomModal from "@/components/global/CustomModal";
-import FunnelPagePlaceholder from "@/components/icons/funnel-page-placeholder";
-import FunnelPageDetails from "@/components/forms/FunnelPageDetails";
-import { FunnelPage } from "@prisma/client";
+import FunnelStepCard from "./FunnelStepCard";
 
-interface FunnelStepsProps {
+type Props = {
   funnel: FunnelsForSubAccount;
-  initialPages: FunnelPage[];
-  subAccountId: string;
+  subaccountId: string;
+  pages: FunnelPage[];
   funnelId: string;
-}
+};
 
-const FunnelSteps: React.FC<FunnelStepsProps> = ({
-  funnel,
-  funnelId,
-  initialPages,
-  subAccountId,
-}) => {
-  const { setOpen } = useModal();
-  const [clickedPage, setClickedPage] = React.useState<FunnelPage | undefined>(
-    initialPages[0]
+const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
+  const [clickedPage, setClickedPage] = useState<FunnelPage | undefined>(
+    pages[0]
   );
-  const [currentPages, setCurrentPages] =
-    React.useState<FunnelPage[]>(initialPages);
+  const { setOpen } = useModal();
+  const [pagesState, setPagesState] = useState(pages);
+  const onDragStart = (event: DragStart) => {
+    //current chosen page
+    const { draggableId } = event;
+    const value = pagesState.find((page) => page.id === draggableId);
+  };
 
   const onDragEnd = (dropResult: DropResult) => {
     const { destination, source } = dropResult;
 
-    // checks if the destination is invalid or if the element was dropped back to its original position
+    //no destination or same position
     if (
       !destination ||
       (destination.droppableId === source.droppableId &&
         destination.index === source.index)
     ) {
-      return null;
+      return;
     }
-
-    // update funnel position during drag & drop
-    const newPagesOrder = [...currentPages]
+    //change state
+    const newPageOrder = [...pagesState]
       .toSpliced(source.index, 1)
-      .toSpliced(destination.index, 0, currentPages[source.index])
-      .map((page, index) => ({
-        ...page,
-        order: index,
-      }));
+      .toSpliced(destination.index, 0, pagesState[source.index])
+      .map((page, idx) => {
+        return { ...page, order: idx };
+      });
 
-    setCurrentPages(newPagesOrder);
-
-    newPagesOrder.forEach(async (page, index) => {
+    setPagesState(newPageOrder);
+    newPageOrder.forEach(async (page, index) => {
       try {
-        await upsertFunnelPage(subAccountId, funnelId, {
-          id: page.id,
-          order: index,
-          name: page.name,
-        });
+        await upsertFunnelPage(
+          subaccountId,
+          {
+            id: page.id,
+            order: index,
+            name: page.name,
+          },
+          funnelId
+        );
       } catch (error) {
-        toast.error("Failed", {
+        console.log(error);
+        toast({
+          variant: "destructive",
+          title: "Failed",
           description: "Could not save page order",
         });
+        return;
       }
+    });
+
+    toast({
+      title: "Success",
+      description: "Saved page order",
     });
   };
 
-  const externalLink = `${process.env.NEXT_PUBLIC_SCHEME}${funnel.subDomainName}.${process.env.NEXT_PUBLIC_DOMAIN}/${clickedPage?.pathName}`;
-
   return (
     <AlertDialog>
-      <div className="flex lg:flex-row flex-col">
-        <aside className="lg:flex-[0.3] bg-background rounded-ss-md rounded-se-md lg:rounded-se-none lg:rounded-es-md p-6 flex flex-col justify-between">
+      <div className="flex border-[1px] lg:!flex-row flex-col ">
+        <aside className="flex-[0.3] bg-background p-6  flex flex-col justify-between ">
           <ScrollArea className="h-full ">
-            <div className="flex gap-2 text-lg font-semibold items-center mb-4">
-              <CheckCircle2 />
+            <div className="flex gap-4 items-center">
+              <Check />
               Funnel Steps
             </div>
-            {currentPages.length ? (
-              <DragDropContext onDragEnd={onDragEnd}>
+            {pagesState.length ? (
+              <DragDropContext onDragEnd={onDragEnd} onDragStart={onDragStart}>
                 <Droppable
                   droppableId="funnels"
                   direction="vertical"
@@ -112,7 +114,7 @@ const FunnelSteps: React.FC<FunnelStepsProps> = ({
                 >
                   {(provided) => (
                     <div {...provided.droppableProps} ref={provided.innerRef}>
-                      {currentPages.map((page, index) => (
+                      {pagesState.map((page, idx) => (
                         <div
                           className="relative"
                           key={page.id}
@@ -120,8 +122,8 @@ const FunnelSteps: React.FC<FunnelStepsProps> = ({
                         >
                           <FunnelStepCard
                             funnelPage={page}
-                            index={index}
-                            totalPages={currentPages.length - 1}
+                            index={idx}
+                            key={page.id}
                             activePage={page.id === clickedPage?.id}
                           />
                         </div>
@@ -132,66 +134,66 @@ const FunnelSteps: React.FC<FunnelStepsProps> = ({
               </DragDropContext>
             ) : (
               <div className="text-center text-muted-foreground py-6">
-                No pages found.
+                No Pages
               </div>
             )}
           </ScrollArea>
           <Button
-            className="mt-4 w-full inline-flex gap-2 items-center"
+            className="mt-4 w-full"
             onClick={() => {
               setOpen(
                 <CustomModal
-                  title="Create or Update a Funnel Page"
-                  subTitle="Funnel Pages allow you to create step by step processes for customers to follow"
-                  scrollShadow={false}
+                  title=" Create or Update a Funnel Page"
+                  subheading="Funnel Pages allow you to create step by step processes for customers to follow"
                 >
-                  <FunnelPageDetails
-                    subAccountId={subAccountId}
+                  <CreateFunnelPage
+                    subaccountId={subaccountId}
                     funnelId={funnelId}
-                    order={currentPages.length}
+                    order={pagesState.length}
                   />
                 </CustomModal>
               );
             }}
           >
-            <PlusCircle className="w-4 h-4" />
             Create New Steps
           </Button>
         </aside>
-        <aside className="lg:flex-[0.7] bg-muted lg:rounded-se-md rounded-ee-md rounded-es-md lg:rounded-es-none p-4">
-          {currentPages.length ? (
+        <aside className="flex-[0.7] bg-muted p-4 ">
+          {!!pages.length ? (
             <Card className="h-full flex justify-between flex-col">
-              <CardHeader className="space-y-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Page name</p>
-                  <CardTitle>{clickedPage?.name}</CardTitle>
-                </div>
-                <CardDescription className="flex flex-col gap-4 mt-4">
-                  <div className="border-2 rounded-lg sm:w-80 w-full overflow-clip">
+              <CardHeader>
+                <p className="text-sm text-muted-foreground">Page name</p>
+                <CardTitle>{clickedPage?.name}</CardTitle>
+                <CardDescription className="flex flex-col gap-4">
+                  <div className="border-2 rounded-lg sm:w-80 w-full  overflow-clip">
                     <Link
-                      href={`/subaccount/${subAccountId}/funnels/${funnelId}/editor/${clickedPage?.id}`}
+                      href={`/subaccount/${subaccountId}/funnels/${funnelId}/editor/${clickedPage?.id}`}
+                      className="relative group"
                     >
                       <div className="cursor-pointer group-hover:opacity-30 w-full">
                         <FunnelPagePlaceholder />
                       </div>
                       <LucideEdit
-                        className="w-12 h-12 text-muted-foreground absolute top-1/2 left-1/2 opacity-0 
-                        transform -translate-x-1/2 -translate-y-1/2 group-hover:opacity-100 transition-all duration-100"
+                        size={50}
+                        className="!text-muted-foreground absolute top-1/2 left-1/2 opacity-0 transofrm -translate-x-1/2 -translate-y-1/2 group-hover:opacity-100 transition-all duration-100"
                       />
                     </Link>
+
                     <Link
-                      href={externalLink}
                       target="_blank"
-                      className="group flex items-center justify-center p-2 gap-2 hover:text-primary transition-colors duration-200"
+                      href={`${process.env.NEXT_PUBLIC_SCHEME}${funnel.subDomainName}.${process.env.NEXT_PUBLIC_DOMAIN}/${clickedPage?.pathName}`}
+                      className="group flex items-center justify-start p-2 gap-2 hover:text-primary transition-colors duration-200"
                     >
-                      <ExternalLink className="w-4 h-4" />
-                      <div className="w-64 overflow-hidden overflow-ellipsis">
-                        {externalLink}
+                      <ExternalLink size={15} />
+                      <div className="w-64 overflow-hidden overflow-ellipsis ">
+                        {process.env.NEXT_PUBLIC_SCHEME}
+                        {funnel.subDomainName}.{process.env.NEXT_PUBLIC_DOMAIN}/
+                        {clickedPage?.pathName}
                       </div>
                     </Link>
                   </div>
-                  <FunnelPageDetails
-                    subAccountId={subAccountId}
+                  <CreateFunnelPage
+                    subaccountId={subaccountId}
                     defaultData={clickedPage}
                     funnelId={funnelId}
                     order={clickedPage?.order || 0}
@@ -200,7 +202,7 @@ const FunnelSteps: React.FC<FunnelStepsProps> = ({
               </CardHeader>
             </Card>
           ) : (
-            <div className="h-96 flex items-center justify-center text-muted-foreground">
+            <div className="h-[600px] flex items-center justify-center text-muted-foreground">
               Create a page to view page settings.
             </div>
           )}

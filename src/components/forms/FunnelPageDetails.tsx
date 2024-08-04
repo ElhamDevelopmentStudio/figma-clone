@@ -84,18 +84,18 @@ const FunnelPageDetails: React.FC<FunnelPageDetailsProps> = ({
       });
 
     try {
-      const response = await upsertFunnelPage(subAccountId, funnelId, {
-        ...values,
-        id: defaultData?.id || uuidv4(),
-        order: defaultData?.order || order,
-        pathName: values.pathName || "",
-      });
+      // const response = await upsertFunnelPage(subAccountId, funnelId, {
+      //   ...values,
+      //   id: defaultData?.id || uuidv4(),
+      //   order: defaultData?.order || order,
+      //   pathName: values.pathName || "",
+      // });
 
-      await saveActivityLogsNotification({
-        agencyId: undefined,
-        description: `Updated a funnel page | ${response?.name}`,
-        subAccountId,
-      });
+      // await saveActivityLogsNotification({
+      //   agencyId: undefined,
+      //   description: `Updated a funnel page | ${response?.name}`,
+      //   subAccountId,
+      // });
 
       toast.success("Success", {
         description: "Saved funnel page details",
@@ -128,28 +128,28 @@ const FunnelPageDetails: React.FC<FunnelPageDetailsProps> = ({
     router.refresh();
   };
 
-  const handleCopyFunnelPage = async () => {
-    const response = await getFunnels(subAccountId);
+  // const handleCopyFunnelPage = async () => {
+  //   const response = await getFunnels(subAccountId);
 
-    const lastFunnelPage = response.find((funnel) => funnel.id === funnelId)
-      ?.FunnelPages.length;
+  //   const lastFunnelPage = response.find((funnel) => funnel.id === funnelId)
+  //     ?.FunnelPages.length;
 
-    await upsertFunnelPage(subAccountId, funnelId, {
-      ...defaultData,
-      id: uuidv4(),
-      order: lastFunnelPage ? lastFunnelPage : 0,
-      visits: 0,
-      name: `${defaultData?.name} Copy`,
-      pathName: `${defaultData?.pathName}copy`,
-      content: defaultData?.content,
-    });
+  //   await upsertFunnelPage(subAccountId, funnelId, {
+  //     ...defaultData,
+  //     id: uuidv4(),
+  //     order: lastFunnelPage ? lastFunnelPage : 0,
+  //     visits: 0,
+  //     name: `${defaultData?.name} Copy`,
+  //     pathName: `${defaultData?.pathName}copy`,
+  //     content: defaultData?.content,
+  //   });
 
-    toast.success("Success", {
-      description: "Saved funnel page details",
-    });
+  //   toast.success("Success", {
+  //     description: "Saved funnel page details",
+  //   });
 
-    router.refresh();
-  };
+  //   router.refresh();
+  // };
 
   const isLoading = form.formState.isSubmitting || form.formState.isLoading;
 
@@ -249,7 +249,7 @@ const FunnelPageDetails: React.FC<FunnelPageDetailsProps> = ({
                           size="icon"
                           disabled={form.formState.isSubmitting}
                           type="button"
-                          onClick={handleCopyFunnelPage}
+                          // onClick={handleCopyFunnelPage}
                         >
                           {isLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />

@@ -13,7 +13,7 @@ const ContactFormComponentPlaceholder = (props: Props) => {
     <div
       draggable
       onDragStart={(e) => handleDragStart(e, "contactForm")}
-      className=" h-14 w-14 bg-muted rounded-lg flex items-center justify-center"
+      className=" h-14 w-14 bg-muted rounded-lg flex items-center justify-center cursor-grab"
     >
       <Contact2Icon size={40} className="text-muted-foreground" />
     </div>
