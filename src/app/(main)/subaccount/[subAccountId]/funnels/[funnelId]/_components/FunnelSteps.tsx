@@ -192,7 +192,6 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
                       </div>
                     </Link>
                   </div>
-
                   <CreateFunnelPage
                     subaccountId={subaccountId}
                     defaultData={clickedPage}

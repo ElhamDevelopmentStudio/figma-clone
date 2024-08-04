@@ -25,7 +25,7 @@ import {
 import { Copy, MoreHorizontal, Trash, X } from "lucide-react";
 import Image from "next/image";
 import { deleteMedia, saveActivityLogsNotification } from "@/lib/queries";
-import { toast } from "../ui/use-toast";
+import { toast } from "sonner";
 
 type Props = { file: Media };
 
@@ -79,14 +79,14 @@ const MediaCard = ({ file }: Props) => {
             </div>
           </div>
 
-          <DropdownMenuContent>
+          <DropdownMenuContent className="z-50">
             <DropdownMenuLabel>Menu</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               className="flex gap-2"
               onClick={() => {
                 navigator.clipboard.writeText(file.link);
-                toast({ title: "Copied To Clipboard" });
+                toast("Copied To Clipboard");
               }}
             >
               <Copy size={15} /> Copy Image Link
@@ -122,8 +122,7 @@ const MediaCard = ({ file }: Props) => {
                 description: `Deleted a media file | ${response?.name}`,
                 subAccountId: response.subAccountId,
               });
-              toast({
-                title: "Deleted File",
+              toast("Deleted File", {
                 description: "Successfully deleted the file",
               });
               setLoading(false);

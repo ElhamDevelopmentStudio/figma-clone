@@ -13,6 +13,10 @@ body {
   box-sizing: border-box;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 /* 
 R (0)
 G (110)

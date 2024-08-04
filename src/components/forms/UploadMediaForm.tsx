@@ -24,6 +24,7 @@ import { createMedia, saveActivityLogsNotification } from "@/lib/queries";
 import { Input } from "../ui/input";
 import FileUpload from "../global/FileUpload";
 import { Button } from "../ui/button";
+import Loading from "../global/Loading";
 
 type Props = {
   subccountId: string;
@@ -45,6 +46,8 @@ const UploadMediaForm = ({ subccountId }: Props) => {
       name: "",
     },
   });
+
+  const isLoading = form.formState.isLoading;
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -85,7 +88,7 @@ const UploadMediaForm = ({ subccountId }: Props) => {
                 <FormItem className="flex-1">
                   <FormLabel>File Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="Your agency name" {...field} />
+                    <Input placeholder="Your file name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -109,8 +112,8 @@ const UploadMediaForm = ({ subccountId }: Props) => {
                 </FormItem>
               )}
             />
-            <Button type="submit" className="mt-4">
-              Upload Media
+            <Button type="submit" className="mt-4" disabled={isLoading}>
+              {form.formState.isSubmitting ? <Loading /> : "Upload Media"}
             </Button>
           </form>
         </Form>

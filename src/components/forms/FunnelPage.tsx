@@ -34,6 +34,16 @@ import {
 import { useRouter } from "next/navigation";
 import { v4 } from "uuid";
 import { CopyPlusIcon, Trash } from "lucide-react";
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
 
 interface CreateFunnelPageProps {
   defaultData?: FunnelPage;
@@ -105,6 +115,20 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
     }
   };
 
+  const handleDelete = async () => {
+    const response = await deleteFunnelePage(defaultData!.id);
+    await saveActivityLogsNotification({
+      agencyId: undefined,
+      description: `Deleted a funnel page | ${response?.name}`,
+      subAccountId: subaccountId,
+    });
+    toast({
+      title: "Success",
+      description: "Funnel page has been deleted.",
+    });
+    router.refresh();
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -162,24 +186,35 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
               </Button>
 
               {defaultData?.id && (
-                <Button
-                  variant={"outline"}
-                  className="w-22 self-end border-destructive text-destructive hover:bg-destructive"
-                  disabled={form.formState.isSubmitting}
-                  type="button"
-                  onClick={async () => {
-                    const response = await deleteFunnelePage(defaultData.id);
-                    await saveActivityLogsNotification({
-                      agencyId: undefined,
-                      description: `Deleted a funnel page | ${response?.name}`,
-                      subAccountId: subaccountId,
-                    });
-                    router.refresh();
-                  }}
-                >
-                  {form.formState.isSubmitting ? <Loading /> : <Trash />}
-                </Button>
+                <AlertDialogTrigger>
+                  <Button
+                    variant={"outline"}
+                    className="w-22 self-end border-destructive text-destructive hover:bg-destructive"
+                    disabled={form.formState.isSubmitting}
+                    type="button"
+                  >
+                    {form.formState.isSubmitting ? <Loading /> : <Trash />}
+                  </Button>
+                </AlertDialogTrigger>
               )}
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    the funnel page and remove it from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="flex items-center">
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive"
+                    onClick={handleDelete}
+                  >
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
               {defaultData?.id && (
                 <Button
                   variant={"outline"}

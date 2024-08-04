@@ -50,7 +50,6 @@ const PipelineSettings = ({
                 onClick={async () => {
                   try {
                     await deletePipeline(pipelineId);
-                    //Challenge: Activity log
                     await saveActivityLogsNotification({
                       agencyId: undefined,
                       description: `Pipeline with ${pipelineId} ID has been deleted. `,
