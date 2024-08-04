@@ -44,6 +44,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { Dialog, DialogPortal } from "../ui/dialog";
 
 interface CreateFunnelPageProps {
   defaultData?: FunnelPage;
@@ -83,16 +84,12 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
           "Pages other than the first page in the funnel require a path name example 'secondstep'.",
       });
     try {
-      const response = await upsertFunnelPage(
-        subaccountId,
-        {
-          ...values,
-          id: defaultData?.id || v4(),
-          order: defaultData?.order || order,
-          pathName: values.pathName || "",
-        },
-        funnelId
-      );
+      const response = await upsertFunnelPage(subaccountId, funnelId, {
+        ...values,
+        id: defaultData?.id || v4(),
+        order: defaultData?.order || order,
+        pathName: values.pathName || "",
+      });
 
       await saveActivityLogsNotification({
         agencyId: undefined,
@@ -184,37 +181,42 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
               >
                 {form.formState.isSubmitting ? <Loading /> : "Save Page"}
               </Button>
-
-              {defaultData?.id && (
-                <AlertDialogTrigger>
-                  <Button
-                    variant={"outline"}
-                    className="w-22 self-end border-destructive text-destructive hover:bg-destructive"
-                    disabled={form.formState.isSubmitting}
-                    type="button"
-                  >
-                    {form.formState.isSubmitting ? <Loading /> : <Trash />}
-                  </Button>
-                </AlertDialogTrigger>
-              )}
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete
-                    the funnel page and remove it from our servers.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter className="flex items-center">
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction
-                    className="bg-destructive"
-                    onClick={handleDelete}
-                  >
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
+              <Dialog>
+                <DialogPortal>
+                  {defaultData?.id && (
+                    <AlertDialogTrigger>
+                      <Button
+                        variant={"outline"}
+                        className="w-22 self-end border-destructive text-destructive hover:bg-destructive"
+                        disabled={form.formState.isSubmitting}
+                        type="button"
+                      >
+                        {form.formState.isSubmitting ? <Loading /> : <Trash />}
+                      </Button>
+                    </AlertDialogTrigger>
+                  )}
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Are you absolutely sure?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This action cannot be undone. This will permanently
+                        delete the funnel page and remove it from our servers.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter className="flex items-center">
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive"
+                        onClick={handleDelete}
+                      >
+                        Delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </DialogPortal>
+              </Dialog>
               {defaultData?.id && (
                 <Button
                   variant={"outline"}
@@ -227,19 +229,15 @@ const CreateFunnelPage: React.FC<CreateFunnelPageProps> = ({
                       (funnel) => funnel.id === funnelId
                     )?.FunnelPages.length;
 
-                    await upsertFunnelPage(
-                      subaccountId,
-                      {
-                        ...defaultData,
-                        id: v4(),
-                        order: lastFunnelPage ? lastFunnelPage : 0,
-                        visits: 0,
-                        name: `${defaultData.name} Copy`,
-                        pathName: `${defaultData.pathName}copy`,
-                        content: defaultData.content,
-                      },
-                      funnelId
-                    );
+                    await upsertFunnelPage(subaccountId, funnelId, {
+                      ...defaultData,
+                      id: v4(),
+                      order: lastFunnelPage ? lastFunnelPage : 0,
+                      visits: 0,
+                      name: `${defaultData.name} Copy`,
+                      pathName: `${defaultData.pathName}copy`,
+                      content: defaultData.content,
+                    });
                     toast({
                       title: "Success",
                       description: "Saves Funnel Page Details",

@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { EditorElement, useEditor } from "@/providers/editor/editor-provider";
 import clsx from "clsx";
 import { Trash } from "lucide-react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 type Props = {
   element: EditorElement;
@@ -11,6 +11,8 @@ type Props = {
 
 const TextComponent = (props: Props) => {
   const { dispatch, state } = useEditor();
+  const [isResizing, setIsResizing] = useState(false);
+  const textComponentRef = useRef<HTMLSpanElement>(null);
 
   const handleDeleteElement = () => {
     dispatch({
@@ -29,6 +31,48 @@ const TextComponent = (props: Props) => {
       },
     });
   };
+
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+  };
+
+  const handleResize = (e: MouseEvent) => {
+    if (!isResizing || !textComponentRef.current) return;
+
+    const container = textComponentRef.current;
+    const newHeight = e.clientY - container.getBoundingClientRect().top;
+
+    dispatch({
+      type: "UPDATE_ELEMENT",
+      payload: {
+        elementDetails: {
+          ...props.element,
+          styles: {
+            ...props.element.styles,
+            height: `${newHeight}px`,
+          },
+        },
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", handleResize);
+      window.addEventListener("mouseup", handleResizeEnd);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleResize);
+      window.removeEventListener("mouseup", handleResizeEnd);
+    };
+  }, [isResizing]);
 
   return (
     <div
@@ -53,8 +97,9 @@ const TextComponent = (props: Props) => {
         )}
 
       <span
-        className=""
+        className="p-1"
         contentEditable={!state.editor.liveMode}
+        ref={textComponentRef}
         onBlur={(e) => {
           const spanElement = e.target as HTMLSpanElement;
           dispatch({
@@ -82,6 +127,13 @@ const TextComponent = (props: Props) => {
               onClick={handleDeleteElement}
             />
           </div>
+        )}
+      {state.editor.selectedElement.id === props.element.id &&
+        !state.editor.liveMode && (
+          <div
+            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+            onMouseDown={handleResizeStart}
+          />
         )}
     </div>
   );

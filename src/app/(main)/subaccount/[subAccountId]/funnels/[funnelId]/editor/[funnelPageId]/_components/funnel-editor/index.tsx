@@ -5,11 +5,9 @@ import { useEditor } from "@/providers/editor/editor-provider";
 import clsx from "clsx";
 import { EyeOff } from "lucide-react";
 import React, { useEffect } from "react";
+import Recursive from "./funnel-editor-components/Recursive";
 
-type Props = {
-  funnelPageId: string;
-  liveMode?: boolean;
-};
+type Props = { funnelPageId: string; liveMode?: boolean };
 
 const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
   const { dispatch, state } = useEditor();
@@ -23,7 +21,7 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
     }
   }, [liveMode]);
 
-  //WIP: make this more performant
+  //CHALLENGE: make this more performant
   useEffect(() => {
     const fetchData = async () => {
       const response = await getFunnelPageDetails(funnelPageId);
@@ -51,7 +49,6 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
     dispatch({ type: "TOGGLE_PREVIEW_MODE" });
     dispatch({ type: "TOGGLE_LIVE_MODE" });
   };
-
   return (
     <div
       className={clsx(
@@ -70,12 +67,16 @@ const FunnelEditor = ({ funnelPageId, liveMode }: Props) => {
         <Button
           variant={"ghost"}
           size={"icon"}
-          className="w-6 h-6 bg-slate-600 p-[2px] fixed top-0 left-0 z-[100] "
+          className="w-6 h-6 bg-slate-600 p-[2px] fixed top-0 left-0 z-[100]"
           onClick={handleUnpreview}
         >
           <EyeOff />
         </Button>
       )}
+      {Array.isArray(state.editor.elements) &&
+        state.editor.elements.map((childElement) => (
+          <Recursive key={childElement.id} element={childElement} />
+        ))}
     </div>
   );
 };

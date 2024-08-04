@@ -13,8 +13,9 @@ import { useEditor } from "@/providers/editor/editor-provider";
 import clsx from "clsx";
 import React from "react";
 import TabList from "./tabs";
-import SettingsTab from "./tabs/component-tab/SettingsTab";
-import MediaBucketTab from "./tabs/component-tab/MediaBucketTab";
+import SettingsTab from "./tabs/SettingsTab";
+import MediaBucketTab from "./tabs/MediaBucketTab";
+import ComponentsTab from "./tabs/components-tab";
 
 type Props = {
   subAccountId: string;
@@ -65,7 +66,7 @@ const FunnelEditorSidebar = ({ subAccountId }: Props) => {
                   You can drag and drop components on the canvas
                 </SheetDescription>
               </SheetHeader>
-              {/* <ComponentsTab /> */}
+              <ComponentsTab />
             </TabsContent>
           </div>
         </SheetContent>

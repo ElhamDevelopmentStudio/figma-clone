@@ -21,6 +21,7 @@ import { v4 } from "uuid";
 import {
   CreateFunnelFormSchema,
   CreateMediaType,
+  FunnelDetailsSchema,
   UpsertFunnelPage,
 } from "./types";
 import { z } from "zod";
@@ -578,17 +579,19 @@ export const getLanesWithTicketAndTags = async (pipelineId: string) => {
 };
 
 export const upsertFunnel = async (
-  subaccountId: string,
-  funnel: z.infer<typeof CreateFunnelFormSchema> & { liveProducts: string },
+  subAccountId: string,
+  funnel: FunnelDetailsSchema & { liveProducts: string },
   funnelId: string
 ) => {
   const response = await db.funnel.upsert({
-    where: { id: funnelId },
+    where: {
+      id: funnelId,
+    },
     update: funnel,
     create: {
       ...funnel,
       id: funnelId || v4(),
-      subAccountId: subaccountId,
+      subAccountId,
     },
   });
 
@@ -820,13 +823,17 @@ export const upsertContact = async (
   return response;
 };
 
-export const getFunnels = async (subacountId: string) => {
-  const funnels = await db.funnel.findMany({
-    where: { subAccountId: subacountId },
-    include: { FunnelPages: true },
+export const getFunnels = async (subAccountId: string) => {
+  const response = await db.funnel.findMany({
+    where: {
+      subAccountId,
+    },
+    include: {
+      FunnelPages: true,
+    },
   });
 
-  return funnels;
+  return response;
 };
 
 export const getFunnel = async (funnelId: string) => {
@@ -856,16 +863,20 @@ export const updateFunnelProducts = async (
 };
 
 export const upsertFunnelPage = async (
-  subaccountId: string,
-  funnelPage: UpsertFunnelPage,
-  funnelId: string
+  subAccountId: string,
+  funnelId: string,
+  funnelPage: Prisma.FunnelPageCreateWithoutFunnelInput
 ) => {
-  if (!subaccountId || !funnelId) return;
+  if (!subAccountId || !funnelId) return undefined;
+
   const response = await db.funnelPage.upsert({
-    where: { id: funnelPage.id || "" },
-    update: { ...funnelPage },
+    where: {
+      id: funnelPage.id || "",
+    },
+    update: funnelPage,
     create: {
       ...funnelPage,
+      funnelId,
       content: funnelPage.content
         ? funnelPage.content
         : JSON.stringify([
@@ -877,11 +888,12 @@ export const upsertFunnelPage = async (
               type: "__body",
             },
           ]),
-      funnelId,
     },
   });
 
-  revalidatePath(`/subaccount/${subaccountId}/funnels/${funnelId}`, "page");
+  // reset page cache
+  revalidatePath(`/subaccount/${subAccountId}/funnels/${funnelId}`);
+
   return response;
 };
 

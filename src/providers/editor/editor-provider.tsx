@@ -1,8 +1,8 @@
 "use client";
-import { EditorBtns } from "@/lib/constants";
-import React, { createContext, Dispatch, useContext, useReducer } from "react";
-import { EditorAction } from "./editor-actions";
+
+
 import { FunnelPage } from "@prisma/client";
+import React, { useContext } from "react";
 
 export type DeviceTypes = "Desktop" | "Mobile" | "Tablet";
 
@@ -11,21 +11,31 @@ export type EditorElement = {
   styles: React.CSSProperties;
   name: string;
   type: EditorBtns;
-  content: EditorElement[] | { href?: string; innerText?: string };
+  content:
+    | EditorElement[]
+    | {
+        href?: string;
+        innerText?: string;
+        src?: string;
+        formTitle?: string;
+        formDescription?: string;
+        formButton?: string;
+        alt?: string;
+      };
 };
 
 export type Editor = {
+  funnelPageId: string;
   liveMode: boolean;
   elements: EditorElement[];
   selectedElement: EditorElement;
   device: DeviceTypes;
   previewMode: boolean;
-  funnelPageId: string;
 };
 
 export type HistoryState = {
-  history: Editor[];
   currentIndex: number;
+  history: Editor[];
 };
 
 export type EditorState = {
@@ -33,7 +43,92 @@ export type EditorState = {
   history: HistoryState;
 };
 
+export type EditorBtns =
+  | "text"
+  | "container"
+  | "section"
+  | "contactForm"
+  | "paymentForm"
+  | "link"
+  | "2Col"
+  | "video"
+  | "__body"
+  | "image"
+  | "3Col"
+  | null;
+
+export type EditorAction =
+  | {
+      type: "ADD_ELEMENT";
+      payload: {
+        containerId: string;
+        elementDetails: EditorElement;
+      };
+    }
+  | {
+      type: "UPDATE_ELEMENT";
+      payload: {
+        elementDetails: EditorElement;
+      };
+    }
+  | {
+      type: "DELETE_ELEMENT";
+      payload: {
+        elementDetails: EditorElement;
+      };
+    }
+  | {
+      type: "CHANGE_CLICKED_ELEMENT";
+      payload: {
+        elementDetails?:
+          | EditorElement
+          | {
+              id: "";
+              content: [];
+              name: "";
+              styles: {};
+              type: null;
+            };
+      };
+    }
+  | {
+      type: "CHANGE_DEVICE";
+      payload: {
+        device: DeviceTypes;
+      };
+    }
+  | {
+      type: "TOGGLE_PREVIEW_MODE";
+    }
+  | {
+      type: "TOGGLE_LIVE_MODE";
+      payload?: {
+        value: boolean;
+      };
+    }
+  | { type: "REDO" }
+  | { type: "UNDO" }
+  | {
+      type: "LOAD_DATA";
+      payload: {
+        elements: EditorElement[];
+        withLive: boolean;
+      };
+    }
+  | {
+      type: "CLEAR_HISTORY";
+    }
+  | {
+      type: "SET_FUNNELPAGE_ID";
+      payload: {
+        funnelPageId: string;
+      };
+    };
+
 const initialEditorState: EditorState["editor"] = {
+  device: "Desktop",
+  previewMode: false,
+  liveMode: false,
   elements: [
     {
       content: [],
@@ -50,15 +145,12 @@ const initialEditorState: EditorState["editor"] = {
     styles: {},
     type: null,
   },
-  device: "Desktop",
-  previewMode: false,
-  liveMode: false,
   funnelPageId: "",
 };
 
 const initialHistoryState: HistoryState = {
-  history: [initialEditorState],
   currentIndex: 0,
+  history: [initialEditorState],
 };
 
 const initialState: EditorState = {
@@ -66,64 +158,80 @@ const initialState: EditorState = {
   history: initialHistoryState,
 };
 
-const addAnElement = (
-  editorArray: EditorElement[],
+const addElement = (
+  elements: EditorElement[],
   action: EditorAction
 ): EditorElement[] => {
-  if (action.type !== "ADD_ELEMENT")
+  if (action.type !== "ADD_ELEMENT") {
     throw Error(
-      "You sent the wrong action type to the Add Element editor State"
+      "You sent the wrong action type to the Add Element editor state"
     );
-  return editorArray.map((item) => {
-    if (item.id === action.payload.containerId && Array.isArray(item.content)) {
+  }
+
+  // if content exists then add elementDetails via payload, if not then handle nested content recursively
+  return elements.map((element) => {
+    if (
+      element.id === action.payload.containerId &&
+      Array.isArray(element.content)
+    ) {
       return {
-        ...item,
-        content: [...item.content, action.payload.elementDetails],
+        ...element,
+        content: [...element.content, action.payload.elementDetails],
       };
-    } else if (item.content && Array.isArray(item.content)) {
+    } else if (element.content && Array.isArray(element.content)) {
       return {
-        ...item,
-        content: addAnElement(item.content, action),
+        ...element,
+        content: addElement(element.content, action),
       };
     }
-    return item;
+
+    return element;
   });
 };
 
-const updateAnElement = (
-  editorArray: EditorElement[],
+const updateElement = (
+  elements: EditorElement[],
   action: EditorAction
 ): EditorElement[] => {
   if (action.type !== "UPDATE_ELEMENT") {
-    throw Error("You sent the wrong action type to the update Element State");
+    throw Error(
+      "You sent the wrong action type to the Update Element editor state"
+    );
   }
-  return editorArray.map((item) => {
-    if (item.id === action.payload.elementDetails.id) {
-      return { ...item, ...action.payload.elementDetails };
-    } else if (item.content && Array.isArray(item.content)) {
+
+  // if element exists then update elementDetails via payload, if not then handle nested content recursively
+  return elements.map((element) => {
+    if (element.id === action.payload.elementDetails.id) {
       return {
-        ...item,
-        content: updateAnElement(item.content, action),
+        ...element,
+        ...action.payload.elementDetails,
+      };
+    } else if (element.content && Array.isArray(element.content)) {
+      return {
+        ...element,
+        content: updateElement(element.content, action),
       };
     }
-    return item;
+
+    return element;
   });
 };
 
-const deleteAnElement = (
-  editorArray: EditorElement[],
-  action: EditorAction
-): EditorElement[] => {
-  if (action.type !== "DELETE_ELEMENT")
+const deleteElement = (elements: EditorElement[], action: EditorAction) => {
+  if (action.type !== "DELETE_ELEMENT") {
     throw Error(
-      "You sent the wrong action type to the Delete Element editor State"
+      "You sent the wrong action type to the Delete Element editor state"
     );
-  return editorArray.filter((item) => {
-    if (item.id === action.payload.elementDetails.id) {
+  }
+
+  // if element exists then delete element via payload, if not then handle nested content recursively
+  return elements.filter((element) => {
+    if (element.id === action.payload.elementDetails.id) {
       return false;
-    } else if (item.content && Array.isArray(item.content)) {
-      item.content = deleteAnElement(item.content, action);
+    } else if (element.content && Array.isArray(element.content)) {
+      element.content = deleteElement(element.content, action);
     }
+
     return true;
   });
 };
@@ -133,19 +241,20 @@ const editorReducer = (
   action: EditorAction
 ): EditorState => {
   switch (action.type) {
-    case "ADD_ELEMENT":
-      const updatedEditorState = {
+    case "ADD_ELEMENT": {
+      const updatedEditor = {
         ...state.editor,
-        elements: addAnElement(state.editor.elements, action),
+        elements: addElement(state.editor.elements, action),
       };
+
       const updatedHistory = [
         ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorState }, // Save a copy of the updated state
+        { ...updatedEditor },
       ];
 
-      const newEditorState = {
+      const newEditorState: EditorState = {
         ...state,
-        editor: updatedEditorState,
+        editor: updatedEditor,
         history: {
           ...state.history,
           history: updatedHistory,
@@ -154,17 +263,16 @@ const editorReducer = (
       };
 
       return newEditorState;
-
-    case "UPDATE_ELEMENT":
-      const updatedElements = updateAnElement(state.editor.elements, action);
-
-      const UpdatedElementIsSelected =
+    }
+    case "UPDATE_ELEMENT": {
+      const updatedElements = updateElement(state.editor.elements, action);
+      const isUpdatedElementSelected =
         state.editor.selectedElement.id === action.payload.elementDetails.id;
 
-      const updatedEditorStateWithUpdate = {
+      const updatedEditor = {
         ...state.editor,
         elements: updatedElements,
-        selectedElement: UpdatedElementIsSelected
+        selectedElement: isUpdatedElementSelected
           ? action.payload.elementDetails
           : {
               id: "",
@@ -175,51 +283,50 @@ const editorReducer = (
             },
       };
 
-      const updatedHistoryWithUpdate = [
-        ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorStateWithUpdate }, // Save a copy of the updated state
+      const updatedHistory = [
+        ...state.history.history.splice(0, state.history.currentIndex + 1),
+        { ...updatedEditor },
       ];
+
+      const newEditorState: EditorState = {
+        ...state,
+        editor: updatedEditor,
+        history: {
+          ...state.history,
+          history: updatedHistory,
+          currentIndex: updatedHistory.length - 1,
+        },
+      };
+
+      return newEditorState;
+    }
+    case "DELETE_ELEMENT": {
+      const updatedElements = deleteElement(state.editor.elements, action);
+
       const updatedEditor = {
-        ...state,
-        editor: updatedEditorStateWithUpdate,
-        history: {
-          ...state.history,
-          history: updatedHistoryWithUpdate,
-          currentIndex: updatedHistoryWithUpdate.length - 1,
-        },
-      };
-      return updatedEditor;
-    case "DELETE_ELEMENT":
-      // Perform your logic to delete the element from the state
-      const updatedElementsAfterDelete = deleteAnElement(
-        state.editor.elements,
-        action
-      );
-
-      const updatedEditorStateAfterDelete = {
         ...state.editor,
-        elements: updatedElementsAfterDelete,
+        elements: updatedElements,
       };
 
-      const updatedHistoryAfterDelete = [
+      const updatedHistory = [
         ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorStateAfterDelete }, // Save a copy of the updated state
+        { ...updatedEditor },
       ];
 
-      const deletedState = {
+      const newEditorState: EditorState = {
         ...state,
-        editor: updatedEditorStateAfterDelete,
+        editor: updatedEditor,
         history: {
           ...state.history,
-          history: updatedHistoryAfterDelete,
-          currentIndex: updatedHistoryAfterDelete.length - 1,
+          history: updatedHistory,
+          currentIndex: updatedHistory.length - 1,
         },
       };
 
-      return deletedState;
-
-    case "CHANGE_CLICKED_ELEMENT":
-      const clickedState = {
+      return newEditorState;
+    }
+    case "CHANGE_CLICKED_ELEMENT": {
+      const clickedState: EditorState = {
         ...state,
         editor: {
           ...state.editor,
@@ -231,38 +338,33 @@ const editorReducer = (
             type: null,
           },
         },
-        history: {
-          ...state.history,
-          history: [
-            ...state.history.history.slice(0, state.history.currentIndex + 1),
-            { ...state.editor }, // Save a copy of the current editor state
-          ],
-          currentIndex: state.history.currentIndex + 1,
-        },
       };
-      return clickedState;
 
-    case "CHANGE_DEVICE":
-      const changedDeviceState = {
+      return clickedState;
+    }
+    case "CHANGE_DEVICE": {
+      const changeDeviceState: EditorState = {
         ...state,
         editor: {
           ...state.editor,
           device: action.payload.device,
         },
       };
-      return changedDeviceState;
 
-    case "TOGGLE_PREVIEW_MODE":
-      const toggleState = {
+      return changeDeviceState;
+    }
+    case "TOGGLE_PREVIEW_MODE": {
+      const togglePreviewState: EditorState = {
         ...state,
         editor: {
           ...state.editor,
           previewMode: !state.editor.previewMode,
         },
       };
-      return toggleState;
 
-    case "TOGGLE_LIVE_MODE":
+      return togglePreviewState;
+    }
+    case "TOGGLE_LIVE_MODE": {
       const toggleLiveMode: EditorState = {
         ...state,
         editor: {
@@ -272,41 +374,67 @@ const editorReducer = (
             : !state.editor.liveMode,
         },
       };
-      return toggleLiveMode;
 
-    case "REDO":
+      return toggleLiveMode;
+    }
+    case "CLEAR_HISTORY": {
+      return {
+        ...state,
+        history: {
+          ...state.history,
+          history: [],
+          currentIndex: 0,
+        },
+      };
+    }
+    case "REDO": {
+      // check if current index is not the last
       if (state.history.currentIndex < state.history.history.length - 1) {
         const nextIndex = state.history.currentIndex + 1;
-        const nextEditorState = { ...state.history.history[nextIndex] };
-        const redoState = {
+
+        const updatedEditor = {
+          ...state.history.history[nextIndex],
+        };
+
+        const newEditorState: EditorState = {
           ...state,
-          editor: nextEditorState,
+          editor: updatedEditor,
           history: {
             ...state.history,
             currentIndex: nextIndex,
           },
         };
-        return redoState;
+
+        return newEditorState;
       }
+
       return state;
-    case "UNDO":
+    }
+    case "UNDO": {
+      // check if current index is not the first
       if (state.history.currentIndex > 0) {
         const prevIndex = state.history.currentIndex - 1;
-        const prevEditorState = { ...state.history.history[prevIndex] };
-        const undoState = {
+
+        const updatedEditor = {
+          ...state.history.history[prevIndex],
+        };
+
+        const newEditorState: EditorState = {
           ...state,
-          editor: prevEditorState,
+          editor: updatedEditor,
           history: {
             ...state.history,
             currentIndex: prevIndex,
           },
         };
-        return undoState;
-      }
-      return state;
 
-    case "LOAD_DATA":
-      return {
+        return newEditorState;
+      }
+
+      return state;
+    }
+    case "LOAD_DATA": {
+      const editorState: EditorState = {
         ...initialState,
         editor: {
           ...initialState.editor,
@@ -314,31 +442,27 @@ const editorReducer = (
           liveMode: !!action.payload.withLive,
         },
       };
-    case "SET_FUNNELPAGE_ID":
+
+      return editorState;
+    }
+    case "SET_FUNNELPAGE_ID": {
       const { funnelPageId } = action.payload;
-      const updatedEditorStateWithFunnelPageId = {
+
+      const updatedEditor = {
         ...state.editor,
         funnelPageId,
       };
 
-      const updatedHistoryWithFunnelPageId = [
-        ...state.history.history.slice(0, state.history.currentIndex + 1),
-        { ...updatedEditorStateWithFunnelPageId }, // Save a copy of the updated state
-      ];
-
-      const funnelPageIdState = {
+      const newEditorState = {
         ...state,
-        editor: updatedEditorStateWithFunnelPageId,
-        history: {
-          ...state.history,
-          history: updatedHistoryWithFunnelPageId,
-          currentIndex: updatedHistoryWithFunnelPageId.length - 1,
-        },
+        editor: updatedEditor,
       };
-      return funnelPageIdState;
 
-    default:
+      return newEditorState;
+    }
+    default: {
       return state;
+    }
   }
 };
 
@@ -349,41 +473,46 @@ export type EditorContextData = {
   setDevice: (device: DeviceTypes) => void;
 };
 
-export const EditorContext = createContext<{
+export const EditorContext = React.createContext<{
   state: EditorState;
-  dispatch: Dispatch<EditorAction>;
-  subaccountId: string;
+  dispatch: React.Dispatch<EditorAction>;
+  subAccountId: string;
   funnelId: string;
   pageDetails: FunnelPage | null;
 }>({
   state: initialState,
   dispatch: () => undefined,
-  subaccountId: "",
+  subAccountId: "",
   funnelId: "",
   pageDetails: null,
 });
 
 type EditorProps = {
   children: React.ReactNode;
-  subaccountId: string;
+  subAccountId: string;
   funnelId: string;
   pageDetails: FunnelPage;
 };
 
-const EditorProvider = (props: EditorProps) => {
-  const [state, dispatch] = useReducer(editorReducer, initialState);
+const EditorProvider: React.FC<EditorProps> = ({
+  children,
+  funnelId,
+  pageDetails,
+  subAccountId,
+}) => {
+  const [state, dispatch] = React.useReducer(editorReducer, initialState);
 
   return (
     <EditorContext.Provider
       value={{
         state,
         dispatch,
-        subaccountId: props.subaccountId,
-        funnelId: props.funnelId,
-        pageDetails: props.pageDetails,
+        subAccountId,
+        funnelId,
+        pageDetails,
       }}
     >
-      {props.children}
+      {children}
     </EditorContext.Provider>
   );
 };

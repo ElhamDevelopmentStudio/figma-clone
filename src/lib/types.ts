@@ -152,3 +152,21 @@ export type FunnelsForSubAccount = Prisma.PromiseReturnType<
 >[0];
 
 export type UpsertFunnelPage = Prisma.FunnelPageCreateWithoutFunnelInput;
+
+export const FunnelDetailsValidator = z.object({
+  name: z.string().min(1),
+  description: z.string(),
+  subDomainName: z.string().optional(),
+  favicon: z.string().optional(),
+});
+
+export type FunnelDetailsSchema = z.infer<typeof FunnelDetailsValidator>;
+
+export const FunnelPageDetailsValidator = z.object({
+  name: z.string().min(1),
+  pathName: z.string().optional(),
+});
+
+export type FunnelPageDetailsSchema = z.infer<
+  typeof FunnelPageDetailsValidator
+>;

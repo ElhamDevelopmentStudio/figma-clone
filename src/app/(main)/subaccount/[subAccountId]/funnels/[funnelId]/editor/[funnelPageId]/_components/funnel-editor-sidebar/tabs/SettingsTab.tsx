@@ -69,6 +69,9 @@ const SettingsTab = (props: Props) => {
       [settingProperty]: value,
     };
 
+    console.log("Setting property:", settingProperty);
+    console.log("Value:", value);
+
     dispatch({
       type: "UPDATE_ELEMENT",
       payload: {
