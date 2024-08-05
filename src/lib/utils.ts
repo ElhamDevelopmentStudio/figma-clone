@@ -14,8 +14,8 @@ export function getStripeOAuthLink(
 }
 
 export function constructMetadata({
-  title = "Plura - run your agency",
-  description = "Plura - run your agency in just aone place",
+  title = "Projex - run your agency",
+  description = "Project - run your agency in just one place",
   image = "/assets/preview.png",
   icons = "/assets/plura-logo.svg",
   noIndex = false,
@@ -57,3 +57,12 @@ export function constructMetadata({
     }),
   };
 }
+
+export const ADD_ONS = [
+  {
+    title: "Priority Support",
+    // Product 3: Priority Support
+    id: "prod_PeTaCp1HBRmIun",
+  },
+];
+

@@ -502,7 +502,6 @@ export const sendInvitation = async (
         throughInvitation: true,
         role,
       },
-      ignoreExisting: true,
     });
   } catch (error) {
     console.log(error);

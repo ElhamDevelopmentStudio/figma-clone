@@ -80,7 +80,7 @@ const SubscriptionFormWrapper = ({ customerId, planExists }: Props) => {
   }, [data, selectedPriceId, customerId]);
 
   return (
-    <div className="border-none transition-all">
+    <div className="l">
       <div className="flex flex-col gap-4">
         {data.plans?.plans.map((price) => (
           <Card
@@ -112,10 +112,12 @@ const SubscriptionFormWrapper = ({ customerId, planExists }: Props) => {
 
         {options.clientSecret && !planExists && (
           <>
-            <h1 className="text-xl">Payment Method</h1>
-            <Elements stripe={getStripe()} options={options}>
-              <SubscriptionForm selectedPriceId={selectedPriceId} />
-            </Elements>
+            <div className="mb-8">
+              <h1 className="text-xl">Payment Method</h1>
+              <Elements stripe={getStripe()} options={options}>
+                <SubscriptionForm selectedPriceId={selectedPriceId} />
+              </Elements>
+            </div>
           </>
         )}
 

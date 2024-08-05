@@ -13,6 +13,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import clsx from "clsx";
+import { format } from "date-fns";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 type Props = {
   params: {
@@ -131,40 +134,55 @@ const BillingPage = async ({ params }: Props) => {
           />
         ))}
       </div>
-      <h2 className="text-2xl p-4">Payment History</h2>
-      <Table className="bg-card border-[1px] border-border rounded-md ">
-        <TableHeader className="rounded-md">
+      <h2 className="text-2xl mb-4">Payment History</h2>
+      <Table className="bg-card rounded-md">
+        <TableHeader>
           <TableRow>
-            <TableHead className="w-[200px]">Description</TableHead>
-            <TableHead className="w-[200px]">Invoice Id</TableHead>
-            <TableHead className="w-[300px]">Date</TableHead>
-            <TableHead className="w-[200px]">Paid</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
+            <TableHead>Description</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Paid</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Invoice ID</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody className="font-medium truncate">
-          {allCharges.map((charge) => (
-            <TableRow key={charge.id}>
-              <TableCell>{charge.description}</TableCell>
-              <TableCell className="text-muted-foreground">
-                {charge.id}
+        <TableBody>
+          {!!allCharges.length &&
+            allCharges.map((charge) => (
+              <TableRow key={charge.id}>
+                <TableCell>{charge.description}</TableCell>
+                <TableCell>
+                  {format(new Date(charge.date), "dd/MM/yyyy hh:mm a")}
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    className={cn({
+                      "bg-emerald-500 text-white":
+                        charge.status.toLowerCase() === "paid",
+                      "bg-orange-600 text-white":
+                        charge.status.toLowerCase() === "pending",
+                      "bg-destructive text-white":
+                        charge.status.toLowerCase() === "failed",
+                    })}
+                  >
+                    {charge.status.toUpperCase()}
+                  </Badge>
+                </TableCell>
+                <TableCell>{charge.amount + ".00"}</TableCell>
+                <TableCell className="text-muted-foreground">
+                  {charge.id}
+                </TableCell>
+              </TableRow>
+            ))}
+          {!allCharges.length && (
+            <TableRow>
+              <TableCell
+                colSpan={5}
+                className="text-center py-14 text-muted-foreground"
+              >
+                No charges found.
               </TableCell>
-              <TableCell>{charge.date}</TableCell>
-              <TableCell>
-                <p
-                  className={clsx("", {
-                    "text-emerald-500": charge.status.toLowerCase() === "paid",
-                    "text-orange-600":
-                      charge.status.toLowerCase() === "pending",
-                    "text-red-600": charge.status.toLowerCase() === "failed",
-                  })}
-                >
-                  {charge.status.toUpperCase()}
-                </p>
-              </TableCell>
-              <TableCell className="text-right">{charge.amount}</TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </>
