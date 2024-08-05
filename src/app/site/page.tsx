@@ -1,95 +1,84 @@
-import Image from "next/image";
-import { pricingCards } from "@/lib/constants";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import clsx from "clsx";
-import { Check, CheckIcon } from "lucide-react";
+import React from "react";
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
+import MaxWidthWrapper from "@/components/ui/max-width-wrapper";
+import { HeroContainerScroll } from "@/components/ui/HeroContainerScroll";
+import { BackgroundBeams } from "@/components/modules/landing/BackgroundBeams";
+import HoverPriceCard from "@/components/modules/landing/HoverPriceCard";
+import { InfiniteMovingCards } from "@/components/modules/landing/InfiniteMovingCard";
+import { StickyScroll } from "@/components/modules/landing/StickyScroll";
+import { cn, constructMetadata } from "@/lib/utils";
 
-export default function Home() {
+const HomePage: React.FC = () => {
   return (
-    <>
-      <section className="h-full w-full md:pt-44 mt-[180px]  flex items-center justify-center flex-col">
-        {/* grid */}
-
-        <div className="absolute bottom-0 left-0 right-0 top-0 bg-[linear-gradient(to_right,#161616_1px,transparent_1px),linear-gradient(to_bottom,#161616_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] -z-10" />
-
-        <p className="text-center">Run your agency, in one place</p>
-        <div className="bg-gradient-to-r from-primary to-secondary-foreground text-transparent bg-clip-text relative">
-          <h1 className="text-9xl font-bold text-center md:text-[300px]">
-            Plura
+    <div className="h-full">
+      {/* <div className="absolute bottom-0 left-0 right-0 top-0 dark:bg-[linear-gradient(to_right,#161616_1px,transparent_1px),linear-gradient(to_bottom,#161616_1px,transparent_1px)] bg-[linear-gradient(to_right,#c4c2c2_1px,transparent_1px),linear-gradient(to_bottom,#c4c2c2_1px,transparent_1px)] bg-[size:1rem_1rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] -z-10" /> */}
+      <section className="w-full relative">
+        <MaxWidthWrapper>
+          <HeroContainerScroll />
+        </MaxWidthWrapper>
+        <BackgroundBeams />
+      </section>
+      <section>
+        <MaxWidthWrapper className="flex items-center flex-col gap-4 md:mt-20">
+          <h2 className="text-4xl text-center font-medium">
+            Choose what fits you right
+          </h2>
+          <p className="text-muted-foreground text-center">
+            Our straightforward pricing plans are tailored to meet your needs.
+            If you&apos;re not ready to commit you can get started for free.
+          </p>
+          <HoverPriceCard />
+        </MaxWidthWrapper>
+      </section>
+      <section className="w-full mt-10 md:mt-20">
+        <InfiniteMovingCards pauseOnHover={false} speed="slow" />
+      </section>
+      <section className="w-full mt-10 md:mt-20">
+        <MaxWidthWrapper>
+          <div className="flex flex-col gap-4 items-center">
+            <h2 className="text-4xl text-center font-medium">
+              Explore new features
+            </h2>
+            <div className="text-muted-foreground text-center">
+              <p>
+                Projex does everything possible to provide you with a convenient
+                tool for managing your agency.
+              </p>
+              <p>Here are just a few tools that may interest you.</p>
+            </div>
+          </div>
+        </MaxWidthWrapper>
+        <div className="py-10">
+          <StickyScroll />
+        </div>
+      </section>
+      <div className="h-[40rem] w-full rounded-md relative flex flex-col items-center justify-center antialiased">
+        <div className="max-w-2xl mx-auto p-4">
+          <h1 className="relative z-10 text-lg md:text-7xl  bg-clip-text text-transparent bg-gradient-to-b from-neutral-200 to-neutral-600  text-center font-sans font-bold">
+            Join Projex
           </h1>
-        </div>
-        <div className="flex justify-center items-center relative md:mt-[-70px]">
-          <Image
-            src={"/assets/preview.png"}
-            alt="banner image"
-            height={1200}
-            width={1200}
-            className="rounded-tl-2xl rounded-tr-2xl border-2 border-muted"
-          />
-          <div className="bottom-0 top-[50%] bg-gradient-to-t dark:from-background left-0 right-0 absolute"></div>
-        </div>
-      </section>
-      <section className="flex justify-center items-center flex-col gap-4 md:mt-20 mt-[-60px]">
-        <h2 className="text-4xl text-center">Choose what fits you right.</h2>
-        <p className="text-muted-foreground text-center">
-          Our straightforward pricing plans are tailored to meet your needs. If
-          {" you're"} not <br />
-          ready to commit you can get started for free.
-        </p>
-        <div className="flex justify-center gap-4 flex-wrap mt-6">
-          {pricingCards.map((card) => (
-            //WIP: Wire up free product from stripe.
-            <Card
-              key={card.title}
-              className={clsx("w-[300px] flex flex-col justify-between mb-10", {
-                "border-2 border-primary": card.title === "Unlimited Saas",
-              })}
+          <p></p>
+          <p className="text-neutral-500 max-w-lg mx-auto my-2 text-sm text-center relative z-10">
+            Discover the power of seamless agency management with Projex Agency
+            CRM. Experience the difference today and revolutionize the way you
+            manage your agency with Projex.
+          </p>
+          <div className="flex justify-center mt-8">
+            <Link
+              href="/agency"
+              className={cn(buttonVariants({ variant: "secondary" }), "w-20")}
             >
-              <CardHeader>
-                <CardTitle
-                  className={clsx("", {
-                    "text-muted-foreground": card.title !== "Unlimited Saas",
-                  })}
-                >
-                  {card.title}
-                </CardTitle>
-                <CardDescription>{card.description}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <span className="text-4xl font-bold">{card.price}</span>
-                <span className="text-muted-foreground">/m</span>
-              </CardContent>
-              <CardFooter className="flex flex-col items-start gap-4">
-                <div>
-                  {card.features.map((feature) => (
-                    <div key={feature} className="flex gap-2 items-center">
-                      <Check className="text-muted-foreground" />
-                      <p>{feature}</p>
-                    </div>
-                  ))}
-                </div>
-                <Link
-                  href={`/agency/?plan=${card.priceId}`}
-                  className={clsx(
-                    "w-full text-center bg-primary p-2 rounded-md",
-                    { "!bg-muted-foreground": card.title === "Unlimited Saas" }
-                  )}
-                >
-                  Get Started
-                </Link>
-              </CardFooter>
-            </Card>
-          ))}
+              Join
+            </Link>
+          </div>
         </div>
-      </section>
-    </>
+        <BackgroundBeams />
+      </div>
+    </div>
   );
-}
+};
+
+export default HomePage;
+
+export const metadata = constructMetadata();
