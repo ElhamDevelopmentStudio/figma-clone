@@ -924,3 +924,12 @@ export const getPipelines = async (subaccountId: string) => {
   });
   return response;
 };
+
+export const getActiveProductsWithPrice = async (agencyId: string) => {
+  const response = await db.subscription.findUnique({
+    where: { agencyId: agencyId, active: true },
+    include: {},
+  });
+
+  return response;
+};

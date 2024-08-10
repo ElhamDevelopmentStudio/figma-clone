@@ -12,6 +12,7 @@ import React from "react";
 import PipelineInfoBar from "../_components/PipelineInfoBar";
 import PipelineSettings from "../_components/PipelineSettings";
 import PipelineView from "../_components/PipelineView";
+import { constructMetadata } from "@/lib/utils";
 
 type Props = {
   params: { subAccountId: string; pipelineId: string };
@@ -65,3 +66,7 @@ const PipelinesIdPage = async ({ params }: Props) => {
 };
 
 export default PipelinesIdPage;
+
+export const metadata = constructMetadata({
+  title: "Pipeline - Projex",
+});

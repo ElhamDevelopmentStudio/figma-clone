@@ -99,6 +99,7 @@ const Container = ({ element }: Props) => {
         break;
       }
       case "container": {
+        if (!state.editor.liveMode) return;
         dispatch({
           type: "ADD_ELEMENT",
           payload: {
@@ -300,6 +301,7 @@ const Container = ({ element }: Props) => {
   };
 
   const handleResizeStart = (e: React.MouseEvent) => {
+    if (type === "__body") return;
     e.preventDefault();
     e.stopPropagation();
     setIsResizing(true);
@@ -310,9 +312,11 @@ const Container = ({ element }: Props) => {
   };
 
   const handleResize = (e: MouseEvent) => {
+    if (type === "__body") return;
     if (!isResizing || !containerRef.current) return;
 
     const container = containerRef.current;
+    const newWidth = e.clientX - container.getBoundingClientRect().left;
     const newHeight = e.clientY - container.getBoundingClientRect().top;
 
     dispatch({
@@ -322,6 +326,7 @@ const Container = ({ element }: Props) => {
           ...element,
           styles: {
             ...element.styles,
+            width: `${newWidth}px`,
             height: `${newHeight}px`,
           },
         },
@@ -344,7 +349,7 @@ const Container = ({ element }: Props) => {
   return (
     <div
       ref={containerRef}
-      style={styles}
+      style={{ ...styles, minWidth: "50px", minHeight: "50px" }}
       className={clsx("relative p-4 transition-all group", {
         "max-w-full w-full": type === "container" || type === "2Col",
         "h-fit": type === "container",
@@ -401,7 +406,7 @@ const Container = ({ element }: Props) => {
       {state.editor.selectedElement.id === element.id &&
         !state.editor.liveMode && (
           <div
-            className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize"
+            className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize"
             onMouseDown={handleResizeStart}
           />
         )}

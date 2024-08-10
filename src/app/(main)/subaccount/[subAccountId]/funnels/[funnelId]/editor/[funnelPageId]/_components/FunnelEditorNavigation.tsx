@@ -6,6 +6,7 @@ import { FunnelPage } from "@prisma/client";
 import clsx from "clsx";
 import {
   ArrowLeftCircle,
+  Eye,
   EyeIcon,
   Laptop,
   Redo2,
@@ -114,6 +115,30 @@ const FunnelEditorNavigation = ({
     }
   };
 
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "s" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      handleOnSave();
+    } else if (event.key === "z" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      handleUndo();
+    } else if (event.key === "y" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      handleRedo();
+    } else if (event.key === "p" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      handlePreviewClick();
+    }
+  };
+
+  React.useEffect(() => {
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [state]);
+
   return (
     <TooltipProvider>
       <nav
@@ -193,45 +218,80 @@ const FunnelEditorNavigation = ({
           </Tabs>
         </aside>
         <aside className="flex items-center gap-2">
-          <Button
-            variant={"ghost"}
-            size={"icon"}
-            className="hover:bg-slate-800"
-            onClick={handlePreviewClick}
-          >
-            <EyeIcon />
-          </Button>
-          <Button
-            disabled={!(state.history.currentIndex > 0)}
-            onClick={handleUndo}
-            variant={"ghost"}
-            size={"icon"}
-            className="hover:bg-slate-800"
-          >
-            <Undo2 />
-          </Button>
-          <Button
-            disabled={
-              !(state.history.currentIndex < state.history.history.length - 1)
-            }
-            onClick={handleRedo}
-            variant={"ghost"}
-            size={"icon"}
-            className="hover:bg-slate-800 mr-4"
-          >
-            <Redo2 />
-          </Button>
-          <div className="flex flex-col item-center mr-4">
-            <div className="flex flex-row items-center gap-4">
-              Draft
-              <Switch disabled defaultChecked={true} />
-              Publish
-            </div>
-            <span className="text-muted-foreground text-sm">
-              Last updated {funnelPageDetails.updatedAt.toLocaleDateString()}
-            </span>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handlePreviewClick}
+              >
+                <Eye className="w-5 h-5" aria-label="Preview" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="inline-flex items-center gap-2">
+                Preview{" "}
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                  <div className="text-xs">Ctrl</div> + P
+                </kbd>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                disabled={state.history.currentIndex > 0 === false}
+                onClick={handleUndo}
+                variant="outline"
+                size="icon"
+              >
+                <Undo2 className="w-5 h-5" aria-label="Undo" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="inline-flex items-center gap-2">
+                Undo{" "}
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                  <div className="text-xs">Ctrl</div> + Z
+                </kbd>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                disabled={
+                  state.history.currentIndex <
+                    state.history.history.length - 1 ===
+                  false
+                }
+                onClick={handleRedo}
+                variant="outline"
+                size="icon"
+              >
+                <Redo2 className="w-5 h-5" aria-label="Redo" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="inline-flex items-center gap-2">
+                Redo{" "}
+                <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                  <div className="text-xs">Ctrl</div> + Y
+                </kbd>
+              </p>
+            </TooltipContent>
+          </Tooltip>
+          <div className="flex flex-col gap-1 relative">
+            <Button onClick={handleOnSave} className={"w-24 px-0"}>
+              Save{" "}
+              {state.history.history.length > 1 &&
+                `(${
+                  state.history.history.length <= 50
+                    ? state.history.history.length
+                    : "50+"
+                })`}
+            </Button>
           </div>
-          <Button onClick={handleOnSave}>Save</Button>
         </aside>
       </nav>
     </TooltipProvider>

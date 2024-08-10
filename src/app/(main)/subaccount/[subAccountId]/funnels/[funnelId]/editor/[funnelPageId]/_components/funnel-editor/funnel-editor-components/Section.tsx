@@ -1,9 +1,6 @@
 "use client";
-
-import React from "react";
-
+import React, { useRef, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
-
 import { cn } from "@/lib/utils";
 import { type EditorElement } from "@/lib/types/editor";
 import { Trash } from "lucide-react";
@@ -18,6 +15,8 @@ const Section: React.FC<EditorSectionProps> = ({ element }) => {
   const { content, type } = element;
   const { state: editorState, dispatch } = useEditor();
   const { editor } = editorState;
+  const sectionRef = useRef<HTMLElement>(null);
+  const [isResizing, setIsResizing] = useState(false);
 
   const handleDeleteElement = () => {
     dispatch({
@@ -38,9 +37,58 @@ const Section: React.FC<EditorSectionProps> = ({ element }) => {
     });
   };
 
+  const handleResizeStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsResizing(true);
+  };
+
+  const handleResizeEnd = () => {
+    setIsResizing(false);
+  };
+
+  const handleResize = (e: MouseEvent) => {
+    if (!isResizing || !sectionRef.current) return;
+
+    const section = sectionRef.current;
+    const newWidth = e.clientX - section.getBoundingClientRect().left;
+    const newHeight = e.clientY - section.getBoundingClientRect().top;
+
+    dispatch({
+      type: "UPDATE_ELEMENT",
+      payload: {
+        elementDetails: {
+          ...element,
+          styles: {
+            ...element.styles,
+            width: `${newWidth}px`,
+            height: `${newHeight}px`,
+          },
+        },
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (isResizing) {
+      window.addEventListener("mousemove", handleResize);
+      window.addEventListener("mouseup", handleResizeEnd);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleResize);
+      window.removeEventListener("mouseup", handleResizeEnd);
+    };
+  }, [isResizing]);
+
   return (
     <section
-      style={element.styles}
+      ref={sectionRef}
+      style={{
+        ...element.styles,
+        minWidth: "50px",
+        minHeight: "50px",
+      }}
       className={cn("relative p-4 transition-all", {
         "h-fit": type === "container",
         "h-full": type === "__body",
@@ -59,21 +107,25 @@ const Section: React.FC<EditorSectionProps> = ({ element }) => {
           {editor.selectedElement.name}
         </Badge>
       )}
-
       {Array.isArray(content) &&
         content.map((childElement) => (
           <Recursive key={childElement.id} element={childElement} />
         ))}
-
       {editor.selectedElement.id === element.id &&
         !editor.liveMode &&
         editor.selectedElement.type !== "__body" && (
-          <div className="absolute bg-primary px-2.5 py-1 text-xs font-bold -top-[25px] -right-[1px] rounded-none rounded-t-lg !text-white">
-            <Trash
-              className="cursor-pointer w-4 h-4"
-              onClick={handleDeleteElement}
+          <>
+            <div className="absolute bg-primary px-2.5 py-1 text-xs font-bold -top-[25px] -right-[1px] rounded-none rounded-t-lg !text-white">
+              <Trash
+                className="cursor-pointer w-4 h-4"
+                onClick={handleDeleteElement}
+              />
+            </div>
+            <div
+              className="absolute bottom-0 right-0 w-4 h-4 bg-blue-500 cursor-se-resize"
+              onMouseDown={handleResizeStart}
             />
-          </div>
+          </>
         )}
     </section>
   );

@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { columns } from "./Columns";
 import FunnelForm from "@/components/forms/FunnelForm";
 import BlurPage from "@/components/global/BlurPage";
+import { constructMetadata } from "@/lib/utils";
 
 const Funnels = async ({ params }: { params: { subAccountId: string } }) => {
   const funnels = await getFunnels(params.subAccountId);
@@ -31,3 +32,7 @@ const Funnels = async ({ params }: { params: { subAccountId: string } }) => {
 };
 
 export default Funnels;
+
+export const metadata = constructMetadata({
+  title: "Funnels - Projex",
+});

@@ -1,6 +1,7 @@
 import AgencyDetails from "@/components/forms/AgencyDetails";
 import UserDetails from "@/components/forms/UserDetails";
 import { db } from "@/lib/db";
+import { constructMetadata } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import React from "react";
 
@@ -53,3 +54,7 @@ const SettingsPage = async ({ params }: Props) => {
 };
 
 export default SettingsPage;
+
+export const metadata = constructMetadata({
+  title: "Settings - Projex",
+});

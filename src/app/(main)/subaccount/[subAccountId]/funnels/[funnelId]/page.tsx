@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import React from "react";
 import FunnelSettings from "./_components/FunnelSettings";
 import FunnelSteps from "./_components/FunnelSteps";
+import { constructMetadata } from "@/lib/utils";
 
 type Props = {
   params: {
@@ -54,3 +55,7 @@ const FunnelIdPage = async ({ params }: Props) => {
 };
 
 export default FunnelIdPage;
+
+export const metadata = constructMetadata({
+  title: "Funnel - Projex",
+});

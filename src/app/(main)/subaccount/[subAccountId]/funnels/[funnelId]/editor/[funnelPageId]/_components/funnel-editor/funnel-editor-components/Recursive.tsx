@@ -30,13 +30,13 @@ const Recursive = ({ element }: Props) => {
     case "paymentForm":
       return <Checkout element={element} />;
     case "2Col":
-      return <TwoColumns element={element} />;
+      return <Container element={element} />;
     case "image":
       return <ImageComponent element={element} />;
     case "link":
       return <LinkComponent element={element} />;
     case "3Col":
-      return <ThreeColumns element={element} />;
+      return <Container element={element} />;
     case "section":
       return <Section element={element} />;
     default:

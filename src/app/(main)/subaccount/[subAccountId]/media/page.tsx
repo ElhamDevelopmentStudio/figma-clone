@@ -1,6 +1,7 @@
 import BlurPage from "@/components/global/BlurPage";
 import MediaComponent from "@/components/media";
 import { getMedia } from "@/lib/queries";
+import { constructMetadata } from "@/lib/utils";
 import React from "react";
 
 type Props = {
@@ -17,3 +18,7 @@ const MediaPage = async ({ params }: Props) => {
 };
 
 export default MediaPage;
+
+export const metadata = constructMetadata({
+  title: "Media - Projex",
+});

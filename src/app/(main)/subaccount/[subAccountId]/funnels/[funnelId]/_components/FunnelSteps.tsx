@@ -42,6 +42,7 @@ const FunnelSteps = ({ funnel, funnelId, pages, subaccountId }: Props) => {
   );
   const { setOpen } = useModal();
   const [pagesState, setPagesState] = useState(pages);
+
   const onDragStart = (event: DragStart) => {
     //current chosen page
     const { draggableId } = event;

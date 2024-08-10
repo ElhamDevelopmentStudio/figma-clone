@@ -1,5 +1,6 @@
 import Unauthorized from "@/components/unauthorized.tsx";
 import { getAuthUserDetails, verifyAndAcceptInvitation } from "@/lib/queries";
+import { constructMetadata } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -38,3 +39,7 @@ const SubAccountMainPage = async ({ searchParams }: Props) => {
 };
 
 export default SubAccountMainPage;
+
+export const metadata = constructMetadata({
+  title: "Subaccount - Plura",
+});

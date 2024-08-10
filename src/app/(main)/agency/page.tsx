@@ -1,5 +1,6 @@
 import AgencyDetails from "@/components/forms/AgencyDetails";
 import { getAuthUserDetails, verifyAndAcceptInvitation } from "@/lib/queries";
+import { constructMetadata } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import { Plan } from "@prisma/client";
 import { redirect } from "next/navigation";
@@ -18,7 +19,7 @@ const Page = async ({
 
   if (agencyId) {
     if (user?.role === "SUBACCOUNT_GUEST" || user?.role === "SUBACCOUNT_USER") {
-      return redirect("subAccount");
+      return redirect("subaccount");
     } else if (user?.role === "AGENCY_ADMIN" || user?.role === "AGENCY_OWNER") {
       if (searchParams.plan) {
         return redirect(
@@ -55,3 +56,7 @@ const Page = async ({
 };
 
 export default Page;
+
+export const metadata = constructMetadata({
+  title: "Agency - Projex",
+});

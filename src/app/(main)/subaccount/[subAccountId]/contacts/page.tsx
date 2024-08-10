@@ -14,6 +14,7 @@ import { SubAccount, Contact, Ticket } from "@prisma/client";
 import { format } from "date-fns/format";
 import React from "react";
 import CreateContactButton from "./_components/CreateContactButton";
+import { constructMetadata } from "@/lib/utils";
 
 type Props = {
   params: { subAccountId: string };
@@ -112,3 +113,7 @@ const ContactPage = async ({ params }: Props) => {
 };
 
 export default ContactPage;
+
+export const metadata = constructMetadata({
+  title: "Contacts - Projex",
+});

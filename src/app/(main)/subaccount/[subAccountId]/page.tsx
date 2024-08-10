@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/table";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { constructMetadata } from "@/lib/utils";
 import { AreaChart, BadgeDelta } from "@tremor/react";
 import {
   ClipboardIcon,
@@ -305,3 +306,7 @@ const SubaccountPageId = async ({ params, searchParams }: Props) => {
 };
 
 export default SubaccountPageId;
+
+export const metadata = constructMetadata({
+  title: "Dashboard - Projex",
+});

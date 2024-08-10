@@ -1,4 +1,5 @@
 import Unauthorized from "@/components/unauthorized.tsx";
+import { constructMetadata } from "@/lib/utils";
 import React from "react";
 
 const UnauthorizedPage = () => {
@@ -6,3 +7,7 @@ const UnauthorizedPage = () => {
 };
 
 export default UnauthorizedPage;
+
+export const metadata = constructMetadata({
+  title: "Unauthorized - Projex",
+});

@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
+import { constructMetadata } from "@/lib/utils";
 import { AreaChart } from "@tremor/react";
 import {
   ClipboardIcon,
@@ -251,3 +252,7 @@ const Page = async ({
 };
 
 export default Page;
+
+export const metadata = constructMetadata({
+  title: "Agency - Projex",
+});

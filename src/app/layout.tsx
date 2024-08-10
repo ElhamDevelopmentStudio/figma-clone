@@ -11,7 +11,7 @@ import { Toaster as SonnerToaster } from "sonner";
 const font = DM_Sans({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Plura",
+  title: "Projex",
   description: "All in one agency solution.",
 };
 

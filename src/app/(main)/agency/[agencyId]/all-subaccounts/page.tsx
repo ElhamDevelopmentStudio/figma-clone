@@ -18,13 +18,14 @@ import {
   CommandInput,
   CommandList,
 } from "@/components/ui/command";
-import { getAuthUserDetails } from "@/lib/queries";
+import { getActiveProductsWithPrice, getAuthUserDetails } from "@/lib/queries";
 import { SubAccount } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 import DeleteButton from "./_components/DeleteButton";
 import CreateSubAccount from "./_components/CreateSubAccount";
+import { constructMetadata } from "@/lib/utils";
 
 type Props = {
   params: {
@@ -34,6 +35,10 @@ type Props = {
 
 const AllSubaccountPage = async ({ params }: Props) => {
   const user = await getAuthUserDetails();
+
+  const subscription = getActiveProductsWithPrice(params.agencyId);
+
+  console.log("All subscriptions: ", subscription);
 
   if (!user) return;
 
@@ -122,3 +127,7 @@ const AllSubaccountPage = async ({ params }: Props) => {
 };
 
 export default AllSubaccountPage;
+
+export const metadata = constructMetadata({
+  title: "Subaccounts - Projex",
+});

@@ -86,7 +86,7 @@ const BillingPage = async ({ params }: Props) => {
               ? "Change Plan"
               : "Get Started"
           }
-          highlightDescription="Want to modify your plan? You can do it here. If you have further questions contact support@plura.com"
+          highlightDescription="Want to modify your plan? You can do it here. If you have further questions contact support@projex.com"
           highlightTitle="Plan Options"
           description={
             agencySubscription?.Subscription?.active === true

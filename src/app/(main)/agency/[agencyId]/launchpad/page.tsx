@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { db } from "@/lib/db";
 import { stripe } from "@/lib/stripe";
-import { getStripeOAuthLink } from "@/lib/utils";
+import { constructMetadata, getStripeOAuthLink } from "@/lib/utils";
 import { CheckCircleIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -154,3 +154,7 @@ const LaunchPad = async ({ params, searchParams }: Props) => {
 };
 
 export default LaunchPad;
+
+export const metadata = constructMetadata({
+  title: "Launchpad - Projex",
+});

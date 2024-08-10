@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { currentUser } from "@clerk/nextjs/server";
 import { columns } from "./Columns";
 import SendInvitation from "@/components/forms/SendInvitation";
+import { constructMetadata } from "@/lib/utils";
 
 type Props = {
   params: { agencyId: string };
@@ -53,3 +54,7 @@ const TeamPage = async ({ params }: Props) => {
 };
 
 export default TeamPage;
+
+export const metadata = constructMetadata({
+  title: "Team - Projex",
+});

@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { constructMetadata } from "@/lib/utils";
 import { redirect } from "next/navigation";
 import React from "react";
 
@@ -31,3 +32,7 @@ const Pipelines = async ({ params }: Props) => {
 };
 
 export default Pipelines;
+
+export const metadata = constructMetadata({
+  title: "Pipelines - Projex",
+});

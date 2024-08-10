@@ -2,6 +2,7 @@ import SubAccountDetails from "@/components/forms/SubaccountDetails";
 import UserDetails from "@/components/forms/UserDetails";
 import BlurPage from "@/components/global/BlurPage";
 import { db } from "@/lib/db";
+import { constructMetadata } from "@/lib/utils";
 import { currentUser } from "@clerk/nextjs/server";
 import React from "react";
 
@@ -53,3 +54,7 @@ const SubaccountSettingPage = async ({ params }: Props) => {
 };
 
 export default SubaccountSettingPage;
+
+export const metadata = constructMetadata({
+  title: "Settings - Projexs",
+});
